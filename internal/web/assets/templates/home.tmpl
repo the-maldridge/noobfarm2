@@ -1,0 +1,42 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <title>Noobfarm</title>
+  </head>
+  <body>
+    <div id="container">
+      <header>
+        <img src="/static/noobfarm_logo.png" />
+
+        <h1><em>Noobfarm</em></h1>
+      </header>
+      <div id="nav">
+
+      </div>
+      <div id="quotes">
+        {{range .Quotes}}
+        <div class="quotecontainer">
+          <div class="quoteheader">
+            <div>#{{.ID}} +({{.Rating}})-</div> <div><span class="orange">Added:</span> {{.DisplayTime}}</div>
+          </div>
+          <div class="quote">
+            {{.Quote}}
+          </div>
+        </div>
+        <hr />
+        {{else}}
+        <div id="missing">
+          No quotes match your query!
+        </div>
+        {{end}}
+      </div>
+      <footer>
+        <hr />
+        &copy Noobfarm | noobfarm.org | noobfarm@noobfarm.org <br />
+
+        <small>Noobfarm.org logo courtesy of k-net. This and others available from CrystalXP.net.
+        Used with permission from the author.</small>
+      </footer>
+    </div>
+  </body>
+</html>

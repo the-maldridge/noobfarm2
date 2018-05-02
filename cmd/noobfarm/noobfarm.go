@@ -5,6 +5,7 @@ import (
 
 	"github.com/the-maldridge/NoobFarm2/internal/qdb"
 	_ "github.com/the-maldridge/NoobFarm2/internal/qdb/impl"
+	"github.com/the-maldridge/NoobFarm2/internal/web"
 )
 
 func main() {
@@ -16,4 +17,6 @@ func main() {
 	}
 
 	_ = qdb.New()
+
+	web.Serve()
 }

@@ -1,0 +1,39 @@
+#container {
+    width: 45em;
+    margin: auto;
+}
+
+#missing {
+    color: red;
+    text-align: center;
+}
+
+.quotecontainer {
+    padding: 0.2em;
+    width: 100%;
+}
+
+.quoteheader {
+    display: flex;
+    justify-content: space-between;
+}
+
+.quotecontainer .orange {
+    color: #c08000;
+}
+
+header {
+    color: white;
+    background-color: #336699;
+    padding: 1em;
+    display: flex;
+}
+
+header h1 {
+    flex: 1 1 auto;
+    text-align: center;
+}
+
+footer {
+    text-align: center;
+}
