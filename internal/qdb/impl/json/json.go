@@ -1,10 +1,6 @@
 package json
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"os"
-
 	"github.com/the-maldridge/NoobFarm2/internal/qdb"
 )
 
@@ -13,7 +9,7 @@ func init() {
 }
 
 func New() qdb.Backend {
-	return QuoteStore{}
+	return &QuoteStore{}
 }
 
 type QuoteStore struct {
@@ -33,5 +29,5 @@ func (qs *QuoteStore) ModQuote(q qdb.Quote) error {
 }
 
 func (qs *QuoteStore) GetQuote(qID int) (qdb.Quote, error) {
-	return nil, nil
+	return qdb.Quote{}, nil
 }

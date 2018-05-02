@@ -2,6 +2,8 @@ package qdb
 
 import (
 	"errors"
+	"flag"
+	"log"
 	"net"
 	"time"
 )
@@ -31,8 +33,10 @@ type BackendFactory func() Backend
 
 var (
 	backends map[string]BackendFactory
+	impl     = flag.String("db", "", "QDB database backend to use")
 
- 	NoSuchQuote = errors.New("No quote matches the given parameters")
+	NoSuchQuote   = errors.New("No quote matches the given parameters")
+	NoSuchBackend = errors.New("Backend specified does not exist!")
 )
 
 func init() {
@@ -46,6 +50,17 @@ func Register(name string, f BackendFactory) {
 	}
 	// Register it now
 	backends[name] = f
+}
+
+func New() Backend {
+	if len(backends) == 1 && *impl == "" {
+		for b := range backends {
+			*impl = b
+			break
+		}
+		log.Println("Warning: No QDB backend selected, using first available choice...")
+	}
+	return backends[*impl]()
 }
 
 func ListBackends() []string {
