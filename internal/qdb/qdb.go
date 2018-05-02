@@ -37,6 +37,8 @@ var (
 
 	NoSuchQuote   = errors.New("No quote matches the given parameters")
 	NoSuchBackend = errors.New("Backend specified does not exist!")
+
+	InternalError = errors.New("An internal database error has occured")
 )
 
 func init() {
