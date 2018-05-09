@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"log"
 
 	"github.com/the-maldridge/NoobFarm2/internal/qdb"
 )
@@ -77,6 +78,7 @@ func (qs *QuoteStore) readQuote(qID int) (qdb.Quote, error) {
 func (qs *QuoteStore) writeQuote(q qdb.Quote) error {
 	d, err := json.Marshal(q)
 	if err != nil {
+		log.Println(err)
 		return qdb.InternalError
 	}
 
@@ -86,6 +88,7 @@ func (qs *QuoteStore) writeQuote(q qdb.Quote) error {
 		0644,
 	)
 	if err != nil {
+		log.Println(err)
 		return qdb.InternalError
 	}
 	return nil

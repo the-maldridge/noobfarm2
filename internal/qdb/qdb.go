@@ -16,10 +16,10 @@ type Quote struct {
 	ApprovedBy   string
 	ApprovedDate time.Time
 	Edited       bool
-	EditedBy     bool
+	EditedBy     string
 	EditedDate   time.Time
 	Submitted    time.Time
-	SubmittedIP  net.Addr
+	SubmittedIP  net.IP
 }
 
 type Backend interface {
