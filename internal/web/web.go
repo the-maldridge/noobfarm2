@@ -1,18 +1,20 @@
 package web
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
-	"time"
+	"strings"
 
 	"github.com/the-maldridge/NoobFarm2/internal/qdb"
 )
 
 var (
 	port = flag.Int("web_port", 8080, "Port to bind the webserver to")
+	db   qdb.Backend
 )
 
 type PageConfig struct {
@@ -20,7 +22,8 @@ type PageConfig struct {
 	Quotes []qdb.Quote
 }
 
-func Serve() {
+func Serve(quotedb qdb.Backend) {
+	db = quotedb
 	http.HandleFunc("/", HomePage)
 	http.HandleFunc("/status", StatusPage)
 
@@ -43,30 +46,21 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Template Parse Error!")
 	}
 
+	q, err := db.GetQuote(1954)
+	if err != nil {
+		log.Println(err)
+	}
 	p := PageConfig{
-		Quotes: []qdb.Quote{
-			qdb.Quote{
-				ID:         1,
-				Quote:      "Hello World!",
-				Rating:     -1,
-				Approved:   true,
-				ApprovedBy: "maldridge",
-				Submitted:  time.Now(),
-			},
-			qdb.Quote{
-				ID:         2,
-				Quote:      "Hello Universe!",
-				Rating:     -1,
-				Approved:   true,
-				ApprovedBy: "maldridge",
-				Submitted:  time.Now(),
-			},
-		},
+		Quotes: []qdb.Quote{q},
 	}
 
+	var page bytes.Buffer
 
-	err = t.Execute(w, p)
+	err = t.Execute(&page, p)
 	if err != nil {
 		fmt.Fprintf(w, "Template runtime error")
 	}
+
+	html := strings.Replace(page.String(), "\\n", "<br />", -1)
+	fmt.Fprintf(w, html)
 }

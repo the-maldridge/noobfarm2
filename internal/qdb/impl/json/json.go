@@ -5,9 +5,11 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
-	"log"
+	"strconv"
+	"strings"
 
 	"github.com/the-maldridge/NoobFarm2/internal/qdb"
 )
@@ -21,10 +23,30 @@ func init() {
 }
 
 func New() qdb.Backend {
-	return &QuoteStore{
+	qs := &QuoteStore{
 		QuoteRoot: filepath.Join(*dataRoot, "quotes"),
 		Quotes:    make(map[int]qdb.Quote),
 	}
+
+	quotes, err := filepath.Glob(filepath.Join(qs.QuoteRoot, "*"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, q := range quotes {
+		fname := filepath.Base(q)
+		fname = strings.Replace(fname, ".dat", "", -1)
+		qID, err := strconv.ParseInt(fname, 10, 32)
+		if err != nil {
+			log.Printf("Bogus file in quotedir: %s", q)
+		}
+		quote, err := qs.readQuote(int(qID))
+		if err != nil {
+			log.Printf("Error loading quote: %s", err)
+		}
+		qs.Quotes[int(qID)] = quote
+	}
+
+	return qs
 }
 
 type QuoteStore struct {

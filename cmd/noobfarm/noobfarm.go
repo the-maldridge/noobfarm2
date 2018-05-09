@@ -16,7 +16,7 @@ func main() {
 		log.Printf("  %s\n", b)
 	}
 
-	_ = qdb.New()
+	db := qdb.New()
 
-	web.Serve()
+	web.Serve(db)
 }

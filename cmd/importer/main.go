@@ -47,6 +47,7 @@ func main() {
 		}
 
 		if len(l) != 11 {
+			log.Printf("Wrong number of fields on line %d", total)
 			log.Println(l[0])
 			continue
 		}
