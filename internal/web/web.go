@@ -27,6 +27,7 @@ type PageConfig struct {
 func Serve(quotedb qdb.Backend) {
 	db = quotedb
 	http.HandleFunc("/", HomePage)
+	http.HandleFunc("/viewquote.php", HomePage)
 	http.HandleFunc("/status", StatusPage)
 
 	http.Handle("/static/",
