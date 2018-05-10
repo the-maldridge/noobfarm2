@@ -22,11 +22,20 @@ type Quote struct {
 	SubmittedIP  net.IP
 }
 
+type SortConfig struct {
+	ByDate     bool
+	ByRating   bool
+	Descending bool
+	Number     int
+	Offset     int
+}
+
 type Backend interface {
 	NewQuote(Quote) error
 	DelQuote(Quote) error
 	ModQuote(Quote) error
 	GetQuote(int) (Quote, error)
+	GetBulkQuotes(SortConfig) []Quote
 }
 
 type BackendFactory func() Backend

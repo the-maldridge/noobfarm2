@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -81,6 +82,46 @@ func (qs *QuoteStore) GetQuote(qID int) (qdb.Quote, error) {
 		return q, nil
 	}
 	return qdb.Quote{}, qdb.NoSuchQuote
+}
+
+func (qs *QuoteStore) GetBulkQuotes(c qdb.SortConfig) []qdb.Quote {
+	// Get all the quotes
+	q := []qdb.Quote{}
+	for _, qt := range qs.Quotes {
+		q = append(q, qt)
+	}
+	// And return them sorted
+	return qs.sortQuotes(c, q)
+}
+
+func (qs *QuoteStore) sortQuotes(c qdb.SortConfig, q []qdb.Quote) []qdb.Quote {
+	if c.ByDate {
+		sort.Slice(q, func(i, j int) bool {
+			if c.Descending {
+				return q[i].Submitted.After(q[j].Submitted)
+			} else {
+				return q[j].Submitted.After(q[i].Submitted)
+			}
+		})
+	} else if c.ByRating {
+		sort.Slice(q, func(i, j int) bool {
+			if c.Descending {
+				return q[j].Rating < q[i].Rating
+			} else {
+				return q[i].Rating < q[j].Rating
+			}
+		})
+	}
+
+	// Handle the normal paging case
+	if c.Number > 0 && c.Offset+c.Number < len(q) {
+		return q[c.Offset : c.Offset+c.Number]
+	}
+	// Handle the last page case
+	if c.Number+c.Offset >= len(q) {
+		return q[len(q)-c.Number:]
+	}
+	return q
 }
 
 func (qs *QuoteStore) readQuote(qID int) (qdb.Quote, error) {
