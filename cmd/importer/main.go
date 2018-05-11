@@ -36,13 +36,13 @@ func main() {
 	total := 0
 	db := qdb.New()
 	for {
-		total++
 		l, err := r.Read()
 		if err == io.EOF {
 			break
 		}
 
 		if len(l) == 1 {
+			log.Printf("Dropping 0 length quote")
 			continue
 		}
 
@@ -108,6 +108,7 @@ func main() {
 		if err := db.NewQuote(q); err != nil {
 			log.Fatal(err)
 		}
+		total++
 	}
 	log.Printf("Total %d", total)
 }
