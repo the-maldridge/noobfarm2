@@ -20,8 +20,11 @@ var (
 )
 
 type PageConfig struct {
-	Page   int
-	Quotes []qdb.Quote
+	Page                int
+	Pages               int
+	Quotes              []qdb.Quote
+	DBSize              int
+	ModerationQueueSize int
 }
 
 func Serve(quotedb qdb.Backend) {
@@ -50,7 +53,10 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Setup the page config
-	p := PageConfig{}
+	p := PageConfig{
+		DBSize:              db.Size(),
+		ModerationQueueSize: db.ModerationQueueSize(),
+	}
 
 	params := r.URL.Query()
 	if params["id"] != nil {
@@ -70,7 +76,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 		// either way we need a sorting config so that should
 		// be parsed out.
 		req := parseSortConfig(params)
-		p.Quotes = db.GetBulkQuotes(req)
+		p.Quotes, p.Pages = db.GetBulkQuotes(req)
 	}
 
 	var page bytes.Buffer

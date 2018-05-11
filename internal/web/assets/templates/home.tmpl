@@ -12,7 +12,6 @@
         <h1><em>Noobfarm</em></h1>
       </header>
       <div id="nav">
-
       </div>
       <div id="quotes">
         {{range .Quotes}}
@@ -30,6 +29,9 @@
           No quotes match your query!
         </div>
         {{end}}
+      </div>
+      <div id="meta">
+        <small>Total Quotes: {{.DBSize}} | Pages in Current Result: {{.Pages}} | Moderation Queue Length: {{.ModerationQueueSize}}</small>
       </div>
       <footer>
         <hr />

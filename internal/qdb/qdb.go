@@ -35,7 +35,17 @@ type Backend interface {
 	DelQuote(Quote) error
 	ModQuote(Quote) error
 	GetQuote(int) (Quote, error)
-	GetBulkQuotes(SortConfig) []Quote
+
+	// This uses a sort config so it will return the quotes and
+	// the number of pages of quotes available for the current
+	// parameters.
+	GetBulkQuotes(SortConfig) ([]Quote, int)
+
+	// How many quotes are in the database
+	Size() int
+
+	// How many quotes are in moderation
+	ModerationQueueSize() int
 }
 
 type BackendFactory func() Backend

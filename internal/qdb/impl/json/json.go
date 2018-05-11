@@ -84,7 +84,7 @@ func (qs *QuoteStore) GetQuote(qID int) (qdb.Quote, error) {
 	return qdb.Quote{}, qdb.NoSuchQuote
 }
 
-func (qs *QuoteStore) GetBulkQuotes(c qdb.SortConfig) []qdb.Quote {
+func (qs *QuoteStore) GetBulkQuotes(c qdb.SortConfig) ([]qdb.Quote, int) {
 	// Get all the quotes
 	q := []qdb.Quote{}
 	for _, qt := range qs.Quotes {
@@ -94,7 +94,7 @@ func (qs *QuoteStore) GetBulkQuotes(c qdb.SortConfig) []qdb.Quote {
 	return qs.sortQuotes(c, q)
 }
 
-func (qs *QuoteStore) sortQuotes(c qdb.SortConfig, q []qdb.Quote) []qdb.Quote {
+func (qs *QuoteStore) sortQuotes(c qdb.SortConfig, q []qdb.Quote) ([]qdb.Quote, int) {
 	if c.ByDate {
 		sort.Slice(q, func(i, j int) bool {
 			if c.Descending {
@@ -115,13 +115,21 @@ func (qs *QuoteStore) sortQuotes(c qdb.SortConfig, q []qdb.Quote) []qdb.Quote {
 
 	// Handle the normal paging case
 	if c.Number > 0 && c.Offset+c.Number < len(q) {
-		return q[c.Offset : c.Offset+c.Number]
+		return q[c.Offset : c.Offset+c.Number], len(q) / c.Number
 	}
 	// Handle the last page case
 	if c.Number+c.Offset >= len(q) {
-		return q[len(q)-c.Number:]
+		return q[len(q)-c.Number:], len(q) / c.Number
 	}
-	return q
+	return q, len(q) / c.Number
+}
+
+func (qs *QuoteStore) Size() int {
+	return len(qs.Quotes)
+}
+
+func (qs *QuoteStore) ModerationQueueSize() int {
+	return 0
 }
 
 func (qs *QuoteStore) readQuote(qID int) (qdb.Quote, error) {
