@@ -1,2 +1,3 @@
 data/
 quotes.csv
+internal/web/assets/bindata.go

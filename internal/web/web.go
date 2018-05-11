@@ -11,7 +11,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/elazarl/go-bindata-assetfs"
+
 	"github.com/the-maldridge/NoobFarm2/internal/qdb"
+	"github.com/the-maldridge/NoobFarm2/internal/web/assets"
 )
 
 var (
@@ -40,7 +43,14 @@ func Serve(quotedb qdb.Backend) {
 
 	http.Handle("/static/",
 		http.StripPrefix("/static/",
-			http.FileServer(http.Dir("./internal/web/assets/static/")),
+			http.FileServer(
+				&assetfs.AssetFS{
+					Asset: assets.Asset,
+					AssetDir: assets.AssetDir,
+					AssetInfo: assets.AssetInfo,
+					Prefix: "static",
+				},
+			),
 		),
 	)
 
