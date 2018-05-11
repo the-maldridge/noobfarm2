@@ -25,6 +25,11 @@ type PageConfig struct {
 	Quotes              []qdb.Quote
 	DBSize              int
 	ModerationQueueSize int
+	NextButton          bool
+	PrevButton          bool
+	NextLink            string
+	PrevLink            string
+	SortConfig          qdb.SortConfig
 }
 
 func Serve(quotedb qdb.Backend) {
@@ -77,10 +82,21 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 		// be parsed out.
 		req := parseSortConfig(params)
 		p.Quotes, p.Pages = db.GetBulkQuotes(req)
+		p.Page = req.Offset/req.Number + 1
+		p.SortConfig = req
+	}
+
+	p.PrevButton = p.Page > 1
+	p.NextButton = p.Pages > 0 && p.Page != p.Pages
+
+	if p.PrevButton {
+		p.PrevLink = navLink(p, -1)
+	}
+	if p.NextButton {
+		p.NextLink = navLink(p, 1)
 	}
 
 	var page bytes.Buffer
-
 	err = t.Execute(&page, p)
 	if err != nil {
 		fmt.Fprintf(w, "Template runtime error")
@@ -88,6 +104,28 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 
 	html := strings.Replace(page.String(), "\\n", "<br />", -1)
 	fmt.Fprintf(w, html)
+}
+
+func navLink(p PageConfig, offset int) string {
+	method := ""
+	direction := ""
+	if p.SortConfig.Descending {
+		direction = "down"
+	} else {
+		direction = "up"
+	}
+	if p.SortConfig.ByRating {
+		method = "rating"
+	} else {
+		method = "date"
+	}
+
+	return fmt.Sprintf("/?count=%d&page=%d&sort_by=%s&sort_order=%s",
+		p.SortConfig.Number,
+		p.Page + offset,
+		method,
+		direction,
+	)
 }
 
 func parseSortConfig(params url.Values) qdb.SortConfig {

@@ -12,6 +12,12 @@
         <h1><em>Noobfarm</em></h1>
       </header>
       <div id="nav">
+        {{if .PrevButton}}
+        <a href="{{.PrevLink}}">Back</a>
+        {{end}}
+        {{if .NextButton}}
+        <a href="{{.NextLink}}">Next</a>
+        {{end}}
       </div>
       <div id="quotes">
         {{range .Quotes}}
