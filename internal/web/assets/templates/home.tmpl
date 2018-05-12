@@ -14,12 +14,15 @@
       <div id="nav">
         {{if .PrevButton}}
         <a href="{{.PrevLink}}">Back</a>
+        {{else}}
+        <div></div>
         {{end}}
         <a href="/">Home</a>
         {{if .NextButton}}
         <a href="{{.NextLink}}">Next</a>
         {{end}}
       </div>
+      <hr />
       <div id="quotes">
         {{range .Quotes}}
         <div class="quotecontainer">
