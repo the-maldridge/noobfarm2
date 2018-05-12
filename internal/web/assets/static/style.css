@@ -12,6 +12,12 @@
     text-align: center;
 }
 
+#nav {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
 .quotecontainer {
     padding: 0.2em;
     width: 100%;

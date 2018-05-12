@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"net/url"
@@ -12,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/elazarl/go-bindata-assetfs"
+	"github.com/arschles/go-bindata-html-template"
 
 	"github.com/the-maldridge/NoobFarm2/internal/qdb"
 	"github.com/the-maldridge/NoobFarm2/internal/web/assets"
@@ -62,7 +62,7 @@ func StatusPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("./internal/web/assets/templates/home.tmpl")
+	t, err := template.New("HomePage", assets.Asset).Parse("templates/home.tmpl")
 	if err != nil {
 		fmt.Fprintf(w, "Template Parse Error!")
 	}
