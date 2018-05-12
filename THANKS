@@ -1,0 +1,42 @@
+This is a small list that we would like to thank:
+------------------------------------------------
+
+Tom Cuchta - author of RQMS (Rash Quote Management System - http://rqms.sourceforge.net/)
+	     His code inspired a rewrite and spawning the code you see here
+
+Mark Walling - Without him, the back end and functioning code would not exist.
+	       He also worked on the original code to fix security issues until
+	       the new code was ready for production.
+
+Matt Hayes   - Wrote the front end and implemented Smarty (http://smarty.php.net)
+	       Hosting the noobfarm.org sites
+
+Fred Emmott  - He helped fix the original RQMS code against security issues and
+	       also helped to implement a captcha for quote posting.
+
+Martin Lefebvre - For building/working on the login/admin pages.  Finally, someone stepped
+		  up to the plate :D
+
+andarius from ##woodchucks on freenode - Helped Matt with some of the front end formatting for
+	       the new web page look.  Although, the bitching, we aren't thanking him for :P.
+ 	       We also want to thank him for his hand in updating the official noobfarm logo
+	       with a cool pull pin.
+
+Everyone from ##woodchucks on freenode - They helped a LOT with the last few pieces of code and mysql calls for the
+		rating code.  Thank goodness.. I was going nuts.  -Matt
+
+
+Thomas York  - General advice about things that had nothing to do with noobfarm code :P
+	       Helping Matt to keep sane during a few nights of coding hell.
+	       Not to mention, his 80% contribution to noobfarm quotes (no, not quotes he submitted;
+	       quotes that are actually him).
+
+Mark and Matt's Wives - For putting up with us during long long long coding nights.  Actually,
+	       they have to be worshipped for marrying and putting up with our asses 24/7/365
+
+
+k-net and CrystalXP.net - The tux-nade logo is originally the creation of k-net (http://www.k-netweb.net/).
+			  This and more are available from CrystalXP.net (http://crystalxp.net/).
+			  tux-nade logo used with permission from the author.
+
+Gillig Florian http://www.geekquotes.net/ - For his French translation which is now added to this great project!
