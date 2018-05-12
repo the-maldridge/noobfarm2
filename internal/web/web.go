@@ -10,14 +10,15 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/elazarl/go-bindata-assetfs"
 	"github.com/arschles/go-bindata-html-template"
+	"github.com/elazarl/go-bindata-assetfs"
 
 	"github.com/the-maldridge/NoobFarm2/internal/qdb"
 	"github.com/the-maldridge/NoobFarm2/internal/web/assets"
 )
 
 var (
+	bind = flag.String("web_bind", "", "Address to bind to")
 	port = flag.Int("web_port", 8080, "Port to bind the webserver to")
 	db   qdb.Backend
 )
@@ -45,16 +46,16 @@ func Serve(quotedb qdb.Backend) {
 		http.StripPrefix("/static/",
 			http.FileServer(
 				&assetfs.AssetFS{
-					Asset: assets.Asset,
-					AssetDir: assets.AssetDir,
+					Asset:     assets.Asset,
+					AssetDir:  assets.AssetDir,
 					AssetInfo: assets.AssetInfo,
-					Prefix: "static",
+					Prefix:    "static",
 				},
 			),
 		),
 	)
 
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", *port), nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", *bind, *port), nil))
 }
 
 func StatusPage(w http.ResponseWriter, r *http.Request) {
@@ -132,7 +133,7 @@ func navLink(p PageConfig, offset int) string {
 
 	return fmt.Sprintf("/?count=%d&page=%d&sort_by=%s&sort_order=%s",
 		p.SortConfig.Number,
-		p.Page + offset,
+		p.Page+offset,
 		method,
 		direction,
 	)
