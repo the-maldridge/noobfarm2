@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/arschles/go-bindata-html-template"
 	"github.com/elazarl/go-bindata-assetfs"
@@ -40,6 +41,7 @@ func Serve(quotedb qdb.Backend) {
 	db = quotedb
 	http.HandleFunc("/", HomePage)
 	http.HandleFunc("/viewquote.php", HomePage)
+	http.HandleFunc("/add", AddQuote)
 	http.HandleFunc("/status", StatusPage)
 
 	http.Handle("/static/",
@@ -115,6 +117,39 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 
 	html := strings.Replace(page.String(), "\\n", "<br />", -1)
 	fmt.Fprintf(w, html)
+}
+
+func AddQuote(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		r.ParseForm()
+		webQuote, ok := r.Form["Quote"]
+		if !ok {
+			// Return bad request
+			http.Error(w, "Quote field missing in request", 400)
+			return
+		}
+		// Normalize newlines
+		quote := strings.Replace(webQuote[0], "\r\n", "\\n", -1)
+
+		// Build and save the quote
+		q := qdb.Quote{
+			Quote:       quote,
+			Submitted:   time.Now(),
+			SubmittedIP: r.RemoteAddr,
+		}
+		if err := db.NewQuote(q); err != nil {
+			http.Error(w, err.Error(), 500)
+			return
+		}
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+
+	// Not adding a quote, send the form instead
+	t, err := template.New("NewQuote", assets.Asset).Parse("templates/add.tmpl")
+	if err != nil {
+		fmt.Fprintf(w, "Template Parse Error!")
+	}
+	t.Execute(w, nil)
 }
 
 func navLink(p PageConfig, offset int) string {

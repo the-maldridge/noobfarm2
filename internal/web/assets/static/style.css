@@ -12,15 +12,17 @@
     text-align: center;
 }
 
-#nav {
-    width: 100%;
+.nav {
     display: flex;
     justify-content: space-between;
 }
 
+.fullwidth {
+    width: 100%;
+}
+
 .quotecontainer {
     padding: 0.2em;
-    width: 100%;
 }
 
 .quoteheader {
@@ -46,4 +48,9 @@ header h1 {
 
 footer {
     text-align: center;
+}
+
+textarea {
+    box-sizing: border-box;
+    display: block;
 }

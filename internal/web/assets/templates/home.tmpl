@@ -11,7 +11,7 @@
 
         <h1><em>Noobfarm</em></h1>
       </header>
-      <div id="nav">
+      <div class="nav fullwidth">
         {{if .PrevButton}}
         <a href="{{.PrevLink}}">Back</a>
         {{else}}
@@ -25,7 +25,7 @@
       <hr />
       <div id="quotes">
         {{range .Quotes}}
-        <div class="quotecontainer">
+        <div class="quotecontainer fullwidth">
           <div class="quoteheader">
             <div>#{{.ID}} +({{.Rating}})-</div> <div><span class="orange">Added:</span> {{.DisplayTime}}</div>
           </div>

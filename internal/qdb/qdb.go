@@ -4,7 +4,6 @@ import (
 	"errors"
 	"flag"
 	"log"
-	"net"
 	"time"
 )
 
@@ -19,7 +18,7 @@ type Quote struct {
 	EditedBy     string
 	EditedDate   time.Time
 	Submitted    time.Time
-	SubmittedIP  net.IP
+	SubmittedIP  string
 }
 
 type SortConfig struct {
