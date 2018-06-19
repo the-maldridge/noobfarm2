@@ -9,7 +9,6 @@ import (
 	"os"
 	"strconv"
 	"time"
-	"net"
 
 	"github.com/the-maldridge/NoobFarm2/internal/qdb"
 	_ "github.com/the-maldridge/NoobFarm2/internal/qdb/impl"
@@ -103,7 +102,7 @@ func main() {
 			EditedBy:    l[9],
 			EditedDate:  time.Unix(editedDate, 0),
 			Submitted:   time.Unix(submitted, 0),
-			SubmittedIP: net.ParseIP(l[6]),
+			SubmittedIP: l[6],
 		}
 		if err := db.NewQuote(q); err != nil {
 			log.Fatal(err)
