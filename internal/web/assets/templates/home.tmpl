@@ -11,13 +11,16 @@
 
         <h1><em>Noobfarm</em></h1>
       </header>
-      <div class="nav fullwidth">
+      <div id="nav" class="fullwidth">
         {{if .PrevButton}}
         <a href="{{.PrevLink}}">Back</a>
         {{else}}
         <div></div>
         {{end}}
-        <a href="/">Home</a>
+        <div>
+          <a href="/">Home</a>
+          <a href="/add">Add Quote</a>
+        </div>
         {{if .NextButton}}
         <a href="{{.NextLink}}">Next</a>
         {{end}}

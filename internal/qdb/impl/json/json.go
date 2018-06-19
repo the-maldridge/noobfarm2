@@ -129,7 +129,13 @@ func (qs *QuoteStore) Size() int {
 }
 
 func (qs *QuoteStore) ModerationQueueSize() int {
-	return 0
+	num := 0
+	for _, q := range qs.Quotes {
+		if !q.Approved {
+			num++
+		}
+	}
+	return num
 }
 
 func (qs *QuoteStore) readQuote(qID int) (qdb.Quote, error) {
