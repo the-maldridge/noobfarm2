@@ -17,6 +17,7 @@ func main() {
 
 	subcommands.Register(&moderator.ListQuotesCmd{}, "Moderation")
 	subcommands.Register(&moderator.ShowQuotesCmd{}, "Moderation")
+	subcommands.Register(&moderator.ApprovalCmd{}, "Moderation")
 
 	flag.Parse()
 	ctx := context.Background()
