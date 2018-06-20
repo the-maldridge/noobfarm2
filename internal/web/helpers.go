@@ -8,16 +8,6 @@ import (
 	"github.com/the-maldridge/NoobFarm2/internal/qdb"
 )
 
-func filterUnapproved(q []qdb.Quote) []qdb.Quote {
-	l := []qdb.Quote{}
-	for _, qn := range q {
-		if qn.Approved {
-			l = append(l, qn)
-		}
-	}
-	return l
-}
-
 func navLink(p PageConfig, offset int) string {
 	method := ""
 	direction := ""

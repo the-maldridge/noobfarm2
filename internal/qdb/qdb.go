@@ -83,6 +83,26 @@ func New() Backend {
 	return backends[*impl]()
 }
 
+func FilterUnapproved(q []Quote) []Quote {
+	l := []Quote{}
+	for _, qn := range q {
+		if qn.Approved {
+			l = append(l, qn)
+		}
+	}
+	return l
+}
+
+func FilterApproved(q []Quote) []Quote {
+	l := []Quote{}
+	for _, qn := range q {
+		if !qn.Approved {
+			l = append(l, qn)
+		}
+	}
+	return l
+}
+
 func ListBackends() []string {
 	l := []string{}
 	for b := range backends {

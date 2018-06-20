@@ -109,7 +109,7 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Filter out quotes that haven't been approved yet
-	p.Quotes = filterUnapproved(p.Quotes)
+	p.Quotes = qdb.FilterUnapproved(p.Quotes)
 
 	var page bytes.Buffer
 	err = t.Execute(&page, p)
