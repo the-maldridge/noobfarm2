@@ -3,6 +3,7 @@ package moderator
 import (
 	"fmt"
 	"os"
+	"strings"
 	"text/tabwriter"
 	"time"
 
@@ -25,4 +26,19 @@ func printQuoteTable(ql []qdb.Quote) {
 	}
 	tw.Flush()
 
+}
+
+func printQuote(q qdb.Quote) {
+	tw := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.AlignRight)
+	fmt.Fprintf(tw, "ID\tRating\tApproved\tApproved By\tSubmitted\tSubmitted IP\t\n")
+	fmt.Fprintf(tw, "%d\t%d\t%t\t%s\t%s\t%s\t\n",
+		q.ID,
+		q.Rating,
+		q.Approved,
+		q.ApprovedBy,
+		q.Submitted.Format(time.ANSIC),
+		q.SubmittedIP,
+	)
+	tw.Flush()
+	fmt.Println(strings.Replace(q.Quote, "\\n", "\n", -1))
 }
