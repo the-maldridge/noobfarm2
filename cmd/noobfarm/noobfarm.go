@@ -5,7 +5,7 @@ import (
 	"flag"
 
 	"github.com/the-maldridge/NoobFarm2/internal/qdb"
-	_ "github.com/the-maldridge/NoobFarm2/internal/qdb/impl"
+	_ "github.com/the-maldridge/NoobFarm2/internal/qdb/all"
 	"github.com/the-maldridge/NoobFarm2/internal/web"
 )
 

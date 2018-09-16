@@ -9,7 +9,7 @@ import (
 	"github.com/google/subcommands"
 
 	"github.com/the-maldridge/NoobFarm2/internal/qdb"
-	_ "github.com/the-maldridge/NoobFarm2/internal/qdb/impl"
+	_ "github.com/the-maldridge/NoobFarm2/internal/qdb/all"
 )
 
 type ApprovalCmd struct {
