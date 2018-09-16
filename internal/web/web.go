@@ -23,6 +23,8 @@ var (
 	db   qdb.Backend
 )
 
+// PageConfig contains all values that are fed into the template
+// context when the page is rendered.
 type PageConfig struct {
 	Page                int
 	Pages               int
@@ -36,6 +38,7 @@ type PageConfig struct {
 	SortConfig          qdb.SortConfig
 }
 
+// Serve begins serving the web frontend.
 func Serve(quotedb qdb.Backend) {
 	db = quotedb
 	http.HandleFunc("/", HomePage)
@@ -59,10 +62,13 @@ func Serve(quotedb qdb.Backend) {
 	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", *bind, *port), nil))
 }
 
+// StatusPage returns a static "Server OK" message to aid in
+// determining if the template engine is dead.
 func StatusPage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Server OK")
 }
 
+// HomePage renders the quotes that are fetched from the database.
 func HomePage(w http.ResponseWriter, r *http.Request) {
 	t, err := template.New("HomePage", assets.Asset).Parse("templates/home.tmpl")
 	if err != nil {
@@ -121,6 +127,9 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, html)
 }
 
+// AddQuote parses the quote form and sends the request to the
+// database, sending the form if no values are posted to the server
+// initially.
 func AddQuote(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		r.ParseForm()
