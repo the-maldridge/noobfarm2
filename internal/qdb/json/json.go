@@ -23,6 +23,7 @@ func init() {
 	qdb.Register("json", New)
 }
 
+// New returns the json quote storage engine to the caller.
 func New() qdb.Backend {
 	qs := &QuoteStore{
 		QuoteRoot: filepath.Join(*dataRoot, "quotes"),
@@ -50,17 +51,21 @@ func New() qdb.Backend {
 	return qs
 }
 
+// The QuoteStore binds all exposed methods in the json storage
+// backend.
 type QuoteStore struct {
 	QuoteRoot string
 	Quotes    map[int]qdb.Quote
 }
 
+// NewQuote creates a new quote and stores it.
 func (qs *QuoteStore) NewQuote(q qdb.Quote) error {
 	q.ID = qs.getNextID()
 	qs.Quotes[q.ID] = q
 	return qs.writeQuote(q)
 }
 
+// DelQuote removes a quote from the storage backend.
 func (qs *QuoteStore) DelQuote(q qdb.Quote) error {
 	err := os.Remove(filepath.Join(qs.QuoteRoot, fmt.Sprintf("%d.dat", q.ID)))
 	if err != nil {
@@ -70,12 +75,16 @@ func (qs *QuoteStore) DelQuote(q qdb.Quote) error {
 	return nil
 }
 
+// ModQuote updates an existing quote in the datastore, and may return
+// an error if the quote ID doesn't exist.
 func (qs *QuoteStore) ModQuote(q qdb.Quote) error {
 	qs.Quotes[q.ID] = q
 	qs.writeQuote(q)
 	return nil
 }
 
+// GetQuote directly fetches a single quote from the datastore.  The
+// quote must exist, an error will be returned.
 func (qs *QuoteStore) GetQuote(qID int) (qdb.Quote, error) {
 	q, ok := qs.Quotes[qID]
 	if ok {
@@ -84,6 +93,11 @@ func (qs *QuoteStore) GetQuote(qID int) (qdb.Quote, error) {
 	return qdb.Quote{}, qdb.ErrNoSuchQuote
 }
 
+// GetBulkQuotes returns a "page" of quotes from the datastore by
+// applying a sort config and making an appropriate selection.  An
+// integer count will be returned as well to determine how many quotes
+// were actually returned, as this number may differ from the
+// requested size.
 func (qs *QuoteStore) GetBulkQuotes(c qdb.SortConfig) ([]qdb.Quote, int) {
 	// Get all the quotes
 	q := []qdb.Quote{}
@@ -99,17 +113,15 @@ func (qs *QuoteStore) sortQuotes(c qdb.SortConfig, q []qdb.Quote) ([]qdb.Quote, 
 		sort.Slice(q, func(i, j int) bool {
 			if c.Descending {
 				return q[i].Submitted.After(q[j].Submitted)
-			} else {
-				return q[j].Submitted.After(q[i].Submitted)
 			}
+			return q[j].Submitted.After(q[i].Submitted)
 		})
 	} else if c.ByRating {
 		sort.Slice(q, func(i, j int) bool {
 			if c.Descending {
 				return q[j].Rating < q[i].Rating
-			} else {
-				return q[i].Rating < q[j].Rating
 			}
+			return q[i].Rating < q[j].Rating
 		})
 	}
 
@@ -124,10 +136,13 @@ func (qs *QuoteStore) sortQuotes(c qdb.SortConfig, q []qdb.Quote) ([]qdb.Quote, 
 	return q, len(q) / c.Number
 }
 
+// Size returns the total number of quotes currently in the datastore.
 func (qs *QuoteStore) Size() int {
 	return len(qs.Quotes)
 }
 
+// ModerationQueueSize returns the number of quotes that are currently
+// in the datastore waiting approval.
 func (qs *QuoteStore) ModerationQueueSize() int {
 	num := 0
 	for _, q := range qs.Quotes {
