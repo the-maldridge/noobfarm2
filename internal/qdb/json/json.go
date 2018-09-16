@@ -64,7 +64,7 @@ func (qs *QuoteStore) NewQuote(q qdb.Quote) error {
 func (qs *QuoteStore) DelQuote(q qdb.Quote) error {
 	err := os.Remove(filepath.Join(qs.QuoteRoot, fmt.Sprintf("%d.dat", q.ID)))
 	if err != nil {
-		return qdb.InternalError
+		return qdb.ErrInternal
 	}
 	delete(qs.Quotes, q.ID)
 	return nil
@@ -81,7 +81,7 @@ func (qs *QuoteStore) GetQuote(qID int) (qdb.Quote, error) {
 	if ok {
 		return q, nil
 	}
-	return qdb.Quote{}, qdb.NoSuchQuote
+	return qdb.Quote{}, qdb.ErrNoSuchQuote
 }
 
 func (qs *QuoteStore) GetBulkQuotes(c qdb.SortConfig) ([]qdb.Quote, int) {
@@ -141,12 +141,12 @@ func (qs *QuoteStore) ModerationQueueSize() int {
 func (qs *QuoteStore) readQuote(qID int) (qdb.Quote, error) {
 	d, err := ioutil.ReadFile(filepath.Join(qs.QuoteRoot, fmt.Sprintf("%d.dat", qID)))
 	if err != nil {
-		return qdb.Quote{}, qdb.InternalError
+		return qdb.Quote{}, qdb.ErrInternal
 	}
 
 	q := qdb.Quote{}
 	if err := json.Unmarshal(d, &q); err != nil {
-		return qdb.Quote{}, qdb.InternalError
+		return qdb.Quote{}, qdb.ErrInternal
 	}
 
 	return q, nil
@@ -156,7 +156,7 @@ func (qs *QuoteStore) writeQuote(q qdb.Quote) error {
 	d, err := json.Marshal(q)
 	if err != nil {
 		log.Println(err)
-		return qdb.InternalError
+		return qdb.ErrInternal
 	}
 
 	err = ioutil.WriteFile(
@@ -166,7 +166,7 @@ func (qs *QuoteStore) writeQuote(q qdb.Quote) error {
 	)
 	if err != nil {
 		log.Println(err)
-		return qdb.InternalError
+		return qdb.ErrInternal
 	}
 	return nil
 }

@@ -1,12 +1,13 @@
 package qdb
 
 import (
-	"errors"
 	"flag"
 	"log"
 	"time"
 )
 
+// The Quote struct contains the various values that are stored with a
+// quote.
 type Quote struct {
 	ID           int
 	Quote        string
@@ -21,6 +22,8 @@ type Quote struct {
 	SubmittedIP  string
 }
 
+// SortConfig includes all the various options that the database may
+// be asked to sort by or fetch values from.
 type SortConfig struct {
 	ByDate     bool
 	ByRating   bool
@@ -29,6 +32,10 @@ type SortConfig struct {
 	Offset     int
 }
 
+// The Backend interface defines all the functions that a conformant
+// QuoteDB will have.  Implementations are of course allowed to
+// provide additional helpers, but these are the only required
+// methods.
 type Backend interface {
 	NewQuote(Quote) error
 	DelQuote(Quote) error
@@ -47,22 +54,20 @@ type Backend interface {
 	ModerationQueueSize() int
 }
 
+// A BackendFactory creates a new QuoteDB Backend initialized and ready for use.
 type BackendFactory func() Backend
 
 var (
 	backends map[string]BackendFactory
 	impl     = flag.String("db", "", "QDB database backend to use")
-
-	NoSuchQuote   = errors.New("No quote matches the given parameters")
-	NoSuchBackend = errors.New("Backend specified does not exist!")
-
-	InternalError = errors.New("An internal database error has occured")
 )
 
 func init() {
 	backends = make(map[string]BackendFactory)
 }
 
+// Register registers a new BackendFactory to be later called when the
+// database is initialized.
 func Register(name string, f BackendFactory) {
 	if _, ok := backends[name]; ok {
 		// Already registered
@@ -72,6 +77,7 @@ func Register(name string, f BackendFactory) {
 	backends[name] = f
 }
 
+// New is called to obtain a ready to use QuoteDB instance.
 func New() Backend {
 	if len(backends) == 1 && *impl == "" {
 		for b := range backends {
@@ -83,26 +89,8 @@ func New() Backend {
 	return backends[*impl]()
 }
 
-func FilterUnapproved(q []Quote) []Quote {
-	l := []Quote{}
-	for _, qn := range q {
-		if qn.Approved {
-			l = append(l, qn)
-		}
-	}
-	return l
-}
-
-func FilterApproved(q []Quote) []Quote {
-	l := []Quote{}
-	for _, qn := range q {
-		if !qn.Approved {
-			l = append(l, qn)
-		}
-	}
-	return l
-}
-
+// ListBackends returns a slice of strings for all currently
+// registered backends that can be instantiated.
 func ListBackends() []string {
 	l := []string{}
 	for b := range backends {
