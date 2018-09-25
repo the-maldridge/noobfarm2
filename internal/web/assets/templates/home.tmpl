@@ -3,7 +3,7 @@
     {{range .Quotes}}
     <div class="quotecontainer fullwidth">
         <div class="quoteheader">
-            <div>#{{.ID}} +({{.Rating}})-</div> <div><span class="orange">Added:</span> {{.DisplayTime}}</div>
+            <div><a href="/?id={{.ID}}">#{{.ID}}</a> +({{.Rating}})-</div> <div><span class="orange">Added:</span> {{.DisplayTime}}</div>
         </div>
         <div class="quote">
             {{.Quote}}
