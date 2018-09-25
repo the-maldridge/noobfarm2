@@ -21,6 +21,9 @@ var (
 	bind = flag.String("web_bind", "", "Address to bind to")
 	port = flag.Int("web_port", 8080, "Port to bind the webserver to")
 	db   qdb.Backend
+
+	homeTmpl *template.Template
+	addTmpl *template.Template
 )
 
 // PageConfig contains all values that are fed into the template
@@ -40,6 +43,19 @@ type PageConfig struct {
 
 // Serve begins serving the web frontend.
 func Serve(quotedb qdb.Backend) {
+	log.Println("Loading theme")
+
+	var err error
+	homeTmpl, err = template.New("home", assets.Asset).ParseFiles("templates/layouts/main.tmpl", "templates/home.tmpl")
+	if err != nil {
+		log.Fatal("Couldn't load home template:", err)
+	}
+
+	addTmpl, err = template.New("add", assets.Asset).ParseFiles("templates/layouts/main.tmpl", "templates/add.tmpl")
+	if err != nil {
+		log.Fatal("Couldn't load add template:", err)
+	}
+
 	db = quotedb
 	http.HandleFunc("/", HomePage)
 	http.HandleFunc("/viewquote.php", HomePage)
@@ -47,15 +63,12 @@ func Serve(quotedb qdb.Backend) {
 	http.HandleFunc("/status", StatusPage)
 
 	http.Handle("/static/",
-		http.StripPrefix("/static/",
-			http.FileServer(
-				&assetfs.AssetFS{
-					Asset:     assets.Asset,
-					AssetDir:  assets.AssetDir,
-					AssetInfo: assets.AssetInfo,
-					Prefix:    "static",
-				},
-			),
+		http.FileServer(
+			&assetfs.AssetFS{
+				Asset:     assets.Asset,
+				AssetDir:  assets.AssetDir,
+				AssetInfo: assets.AssetInfo,
+			},
 		),
 	)
 
@@ -70,11 +83,6 @@ func StatusPage(w http.ResponseWriter, r *http.Request) {
 
 // HomePage renders the quotes that are fetched from the database.
 func HomePage(w http.ResponseWriter, r *http.Request) {
-	t, err := template.New("HomePage", assets.Asset).Parse("templates/home.tmpl")
-	if err != nil {
-		fmt.Fprintf(w, "Template Parse Error!")
-	}
-
 	// Setup the page config
 	p := PageConfig{
 		DBSize:              db.Size(),
@@ -118,9 +126,10 @@ func HomePage(w http.ResponseWriter, r *http.Request) {
 	p.Quotes = qdb.FilterUnapproved(p.Quotes)
 
 	var page bytes.Buffer
-	err = t.Execute(&page, p)
+	err := homeTmpl.ExecuteTemplate(&page, "layout", p)
 	if err != nil {
 		fmt.Fprintf(w, "Template runtime error")
+		fmt.Fprintf(w, fmt.Sprintf("%s", err))
 	}
 
 	html := strings.Replace(page.String(), "\\n", "<br />", -1)
@@ -165,9 +174,7 @@ func AddQuote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Not adding a quote, send the form instead
-	t, err := template.New("NewQuote", assets.Asset).Parse("templates/add.tmpl")
-	if err != nil {
-		fmt.Fprintf(w, "Template Parse Error!")
+	if err := addTmpl.ExecuteTemplate(w, "layout", nil); err != nil {
+		fmt.Fprintf(w, "Template runtime error")
 	}
-	t.Execute(w, nil)
 }

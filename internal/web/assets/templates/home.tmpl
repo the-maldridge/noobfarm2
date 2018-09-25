@@ -1,57 +1,22 @@
-<html>
-  <head>
-    <link rel="stylesheet" type="text/css" href="/static/style.css">
-    <link rel="icon" href="/static/favicon.ico">
-    <title>Noobfarm</title>
-  </head>
-  <body>
-    <div id="container">
-      <header>
-        <img src="/static/noobfarm_logo.png" />
-
-        <h1><em>Noobfarm</em></h1>
-      </header>
-      <div id="nav" class="fullwidth">
-        {{if .PrevButton}}
-        <a href="{{.PrevLink}}">Back</a>
-        {{else}}
-        <div></div>
-        {{end}}
-        <div>
-          <a href="/">Home</a>
-          <a href="/add">Add Quote</a>
-        </div>
-        {{if .NextButton}}
-        <a href="{{.NextLink}}">Next</a>
-        {{end}}
-      </div>
-      <hr />
-      <div id="quotes">
-        {{range .Quotes}}
-        <div class="quotecontainer fullwidth">
-          <div class="quoteheader">
+{{ define "content" }}
+<div id="quotes">
+    {{range .Quotes}}
+    <div class="quotecontainer fullwidth">
+        <div class="quoteheader">
             <div>#{{.ID}} +({{.Rating}})-</div> <div><span class="orange">Added:</span> {{.DisplayTime}}</div>
-          </div>
-          <div class="quote">
+        </div>
+        <div class="quote">
             {{.Quote}}
-          </div>
         </div>
-        <hr />
-        {{else}}
-        <div id="missing">
-          No quotes match your query!
-        </div>
-        {{end}}
-      </div>
-      <div id="meta">
-        <small>Total Quotes: {{.DBSize}} | Pages in Current Result: {{.Pages}} | Moderation Queue Length: {{.ModerationQueueSize}}</small>
-      </div>
-      <footer>
-        <hr />
-        &copy Noobfarm | noobfarm.org | noobfarm@noobfarm.org <br />
-
-        <small>Noobfarm.org logo courtesy of k-net. Used with permission from the author.</small>
-      </footer>
     </div>
-  </body>
-</html>
+    <hr />
+    {{else}}
+    <div id="missing">
+        No quotes match your query!
+    </div>
+    {{end}}
+</div>
+<div id="meta">
+    <small>Total Quotes: {{.DBSize}} | Pages in Current Result: {{.Pages}} | Moderation Queue Length: {{.ModerationQueueSize}}</small>
+</div>
+{{ end }}
