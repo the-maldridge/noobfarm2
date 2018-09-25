@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -23,7 +24,7 @@ var (
 	db   qdb.Backend
 
 	homeTmpl *template.Template
-	addTmpl *template.Template
+	addTmpl  *template.Template
 )
 
 // PageConfig contains all values that are fed into the template
@@ -166,6 +167,20 @@ func AddQuote(w http.ResponseWriter, r *http.Request) {
 			Submitted:   time.Now(),
 			SubmittedIP: r.RemoteAddr,
 		}
+
+		// Fish out a forwarded address if one exists
+		if ip, ok := r.Header["X-Forwarded-For"]; ok {
+			q.SubmittedIP = ip[0]
+		}
+		ip, _, err := net.SplitHostPort(q.SubmittedIP)
+		if err != nil {
+			log.Println(err)
+		}
+		if addr := net.ParseIP(ip); addr != nil {
+			q.SubmittedIP = ip
+		}
+
+		// Save the quote
 		if err := db.NewQuote(q); err != nil {
 			http.Error(w, err.Error(), 500)
 			return
