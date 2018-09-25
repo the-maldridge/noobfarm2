@@ -7,23 +7,23 @@
   </head>
   <body>
     <div id="container">
-      <header>
-        <img src="/static/noobfarm_logo.png" />
-
-        <h1><em>Noobfarm</em></h1>
-      </header>
+      {{ template "header" }}
       {{ template "nav" . }}
       <hr />
       {{ template "content" . }}
       <hr />
-      {{ template "footer" . }}
+      {{ template "footer" }}
     </div>
   </body>
 </html>
 {{ end }}
 
 {{ define "header" }}
+<header>
+    <img src="/static/noobfarm_logo.png" />
 
+    <h1><em>Noobfarm</em></h1>
+</header>
 {{ end }}
 
 {{ define "nav" }}
