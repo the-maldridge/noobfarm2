@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/the-maldridge/NoobFarm2/internal/qdb"
+	"github.com/the-maldridge/noobfarm2/internal/qdb"
 )
 
 func navLink(p PageConfig, offset int) string {

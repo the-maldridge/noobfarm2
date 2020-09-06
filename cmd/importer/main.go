@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/the-maldridge/NoobFarm2/internal/qdb"
-	_ "github.com/the-maldridge/NoobFarm2/internal/qdb/all"
+	"github.com/the-maldridge/noobfarm2/internal/qdb"
+	_ "github.com/the-maldridge/noobfarm2/internal/qdb/all"
 )
 
 var (
@@ -20,7 +20,7 @@ var (
 
 func main() {
 	flag.Parse()
-	log.Println("NoobFarm2 importer initalizing...")
+	log.Println("noobfarm2 importer initalizing...")
 
 	f, err := os.Open(*importPath)
 	if err != nil {

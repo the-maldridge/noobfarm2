@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/subcommands"
 
-	"github.com/the-maldridge/NoobFarm2/internal/moderator"
+	"github.com/the-maldridge/noobfarm2/internal/moderator"
 )
 
 func main() {

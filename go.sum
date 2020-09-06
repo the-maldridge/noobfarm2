@@ -1,0 +1,6 @@
+github.com/arschles/go-bindata-html-template v0.0.0-20170123182818-839a6918b9ff h1:ETIbG/K781mMt/+Da71SjOwIW5dwFqSEMa93obUNlm0=
+github.com/arschles/go-bindata-html-template v0.0.0-20170123182818-839a6918b9ff/go.mod h1:G2RVilyy6tNEfDhlQavPdF90GsPbA8YK6TrPBjfCxAs=
+github.com/elazarl/go-bindata-assetfs v1.0.0 h1:G/bYguwHIzWq9ZoyUQqrjTmJbbYn3j3CKKpKinvZLFk=
+github.com/elazarl/go-bindata-assetfs v1.0.0/go.mod h1:v+YaWX3bdea5J/mo8dSETolEo7R71Vk1u8bnjau5yw4=
+github.com/google/subcommands v0.0.0-20180618214453-5bae204cdfb2 h1:xT8XvBDdhTRgh/lZ94y4WLPjbIMh4Gsxcho5SyBMIaM=
+github.com/google/subcommands v0.0.0-20180618214453-5bae204cdfb2/go.mod h1:ZjhPrFU+Olkh9WazFPsl27BQ4UPiG37m3yTrtFlrHVk=

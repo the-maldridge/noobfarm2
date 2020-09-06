@@ -7,11 +7,11 @@ import (
 
 	"github.com/google/subcommands"
 
-	"github.com/the-maldridge/NoobFarm2/internal/qdb"
+	"github.com/the-maldridge/noobfarm2/internal/qdb"
 
 	// This import allows database implementations to self
 	// register during init().
-	_ "github.com/the-maldridge/NoobFarm2/internal/qdb/all"
+	_ "github.com/the-maldridge/noobfarm2/internal/qdb/all"
 )
 
 // ShowQuotesCmd binds methods needed to show a quote

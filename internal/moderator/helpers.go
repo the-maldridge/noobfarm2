@@ -7,7 +7,7 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/the-maldridge/NoobFarm2/internal/qdb"
+	"github.com/the-maldridge/noobfarm2/internal/qdb"
 )
 
 func printQuoteTable(ql []qdb.Quote) {
