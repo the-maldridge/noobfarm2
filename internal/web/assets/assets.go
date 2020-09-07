@@ -287,13 +287,13 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"assets.go": assetsGo,
-	"doc.go": docGo,
-	"static/favicon.ico": staticFaviconIco,
-	"static/noobfarm_logo.png": staticNoobfarm_logoPng,
-	"static/style.css": staticStyleCss,
-	"templates/add.tmpl": templatesAddTmpl,
-	"templates/home.tmpl": templatesHomeTmpl,
+	"assets.go":                   assetsGo,
+	"doc.go":                      docGo,
+	"static/favicon.ico":          staticFaviconIco,
+	"static/noobfarm_logo.png":    staticNoobfarm_logoPng,
+	"static/style.css":            staticStyleCss,
+	"templates/add.tmpl":          templatesAddTmpl,
+	"templates/home.tmpl":         templatesHomeTmpl,
 	"templates/layouts/main.tmpl": templatesLayoutsMainTmpl,
 }
 
@@ -336,16 +336,17 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
 	"assets.go": &bintree{assetsGo, map[string]*bintree{}},
-	"doc.go": &bintree{docGo, map[string]*bintree{}},
+	"doc.go":    &bintree{docGo, map[string]*bintree{}},
 	"static": &bintree{nil, map[string]*bintree{
-		"favicon.ico": &bintree{staticFaviconIco, map[string]*bintree{}},
+		"favicon.ico":       &bintree{staticFaviconIco, map[string]*bintree{}},
 		"noobfarm_logo.png": &bintree{staticNoobfarm_logoPng, map[string]*bintree{}},
-		"style.css": &bintree{staticStyleCss, map[string]*bintree{}},
+		"style.css":         &bintree{staticStyleCss, map[string]*bintree{}},
 	}},
 	"templates": &bintree{nil, map[string]*bintree{
-		"add.tmpl": &bintree{templatesAddTmpl, map[string]*bintree{}},
+		"add.tmpl":  &bintree{templatesAddTmpl, map[string]*bintree{}},
 		"home.tmpl": &bintree{templatesHomeTmpl, map[string]*bintree{}},
 		"layouts": &bintree{nil, map[string]*bintree{
 			"main.tmpl": &bintree{templatesLayoutsMainTmpl, map[string]*bintree{}},
@@ -399,4 +400,3 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
-

@@ -1,24 +1,24 @@
 package main
 
 import (
-	"log"
-	"flag"
+	"os"
 
-	"github.com/the-maldridge/noobfarm2/internal/qdb"
-	_ "github.com/the-maldridge/noobfarm2/internal/qdb/all"
+	"github.com/hashicorp/go-hclog"
+
 	"github.com/the-maldridge/noobfarm2/internal/web"
 )
 
 func main() {
-	flag.Parse()
-	log.Println("noobfarm2 is starting...")
-
-	log.Println("The following quote databases are available")
-	for _, b := range qdb.ListBackends() {
-		log.Printf("  %s\n", b)
+	llevel := os.Getenv("NF_LOGLEVEL")
+	if llevel == "" {
+		llevel = "INFO"
 	}
 
-	db := qdb.New()
+	appLogger := hclog.New(&hclog.LoggerOptions{
+		Name:  "noobfarm2",
+		Level: hclog.LevelFromString(llevel),
+	})
 
-	web.Serve(db)
+	w := web.New(appLogger, nil)
+	w.Serve(os.Getenv("NF_BIND"))
 }

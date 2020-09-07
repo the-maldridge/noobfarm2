@@ -1,0 +1,52 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+.bar {
+    padding: 0.25em;
+    padding-left: 1em;
+    background: lightgrey;
+}
+
+.top-bar {
+    box-shadow: 0px 3px 3px grey;
+}
+
+.bottom-bar {
+    box-shadow: 0px -3px 3px grey;
+}
+
+.card {
+    padding: 0.5em;
+    margin-bottom: 1em;
+    box-shadow: 3px 3px 3px grey;
+    border: 1px solid grey;
+    border-radius: 3px;
+}
+
+.card-meta {
+    font-size: small;
+}
+
+.search-form {
+    text-align: center;
+}
+
+#content {
+    width: 55%;
+    margin-left: auto;
+    margin-right: auto;
+    flex: 1 0 auto;
+    padding: 1em;
+}
+
+#footer {
+    flex-shrink: 0;
+}
