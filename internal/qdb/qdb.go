@@ -30,6 +30,8 @@ type Backend interface {
 	PutQuote(Quote) error
 	DelQuote(Quote) error
 	GetQuote(int) (Quote, error)
+
+	Search(string, int, int) []Quote
 }
 
 // A BackendFactory creates a new QuoteDB Backend initialized and ready for use.

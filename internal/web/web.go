@@ -3,7 +3,6 @@ package web
 import (
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/labstack/echo/v4"
@@ -39,47 +38,7 @@ func (qs *QuoteServer) Serve(bind string) error {
 }
 
 func (qs *QuoteServer) home(c echo.Context) error {
-	quotes := []qdb.Quote{
-		{
-			ID:           1,
-			Quote:        "Foobar 9000",
-			Rating:       24,
-			Approved:     true,
-			ApprovedBy:   "maldridge",
-			ApprovedDate: time.Now(),
-			Edited:       true,
-			EditedBy:     "maldridge2",
-			EditedDate:   time.Now(),
-			Submitted:    time.Now(),
-			SubmittedIP:  "8.8.8.8",
-		},
-		{
-			ID:           2,
-			Quote:        "Wow this quote system is really nifty",
-			Rating:       264,
-			Approved:     true,
-			ApprovedBy:   "maldridge",
-			ApprovedDate: time.Now(),
-			Edited:       true,
-			EditedBy:     "maldridge2",
-			EditedDate:   time.Now(),
-			Submitted:    time.Now(),
-			SubmittedIP:  "8.8.8.8",
-		},
-		{
-			ID:           3,
-			Quote:        "lorem ipsum",
-			Rating:       235,
-			Approved:     true,
-			ApprovedBy:   "maldridge",
-			ApprovedDate: time.Now(),
-			Edited:       true,
-			EditedBy:     "maldridge2",
-			EditedDate:   time.Now(),
-			Submitted:    time.Now(),
-			SubmittedIP:  "8.8.8.8",
-		},
-	}
+	quotes := qs.db.Search("Approved:T*", 10, 0)
 
 	pagedata := make(map[string]interface{})
 	pagedata["Quotes"] = quotes

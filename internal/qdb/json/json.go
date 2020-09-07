@@ -25,6 +25,8 @@ func cb() {
 // The QuoteStore binds all exposed methods in the json storage
 // backend.
 type QuoteStore struct {
+	*qdb.Searcher
+
 	log hclog.Logger
 
 	QuoteRoot string
@@ -36,6 +38,11 @@ func New(l hclog.Logger) (qdb.Backend, error) {
 		log:       l.Named("json"),
 		QuoteRoot: filepath.Join(os.Getenv("NF_JSONROOT"), "quotes"),
 	}
+	qs.Searcher = qdb.NewSearcher(qs.log)
+	qs.SetQLoader(qs.GetQuote)
+	qs.SetKeysFunc(qs.Keys)
+	qs.LoadAll()
+
 	return qs, nil
 }
 
@@ -72,6 +79,7 @@ func (qs *QuoteStore) DelQuote(q qdb.Quote) error {
 // GetQuote directly fetches a single quote from the datastore.  The
 // quote must exist, an error will be returned.
 func (qs *QuoteStore) GetQuote(qID int) (qdb.Quote, error) {
+	qs.log.Trace("Loading quote", "id", qID)
 	return qs.readQuote(qID)
 }
 
