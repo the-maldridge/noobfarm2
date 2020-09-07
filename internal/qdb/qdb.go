@@ -1,9 +1,9 @@
 package qdb
 
 import (
-	"flag"
-	"log"
 	"time"
+
+	"github.com/hashicorp/go-hclog"
 )
 
 // The Quote struct contains the various values that are stored with a
@@ -22,44 +22,28 @@ type Quote struct {
 	SubmittedIP  string
 }
 
-// SortConfig includes all the various options that the database may
-// be asked to sort by or fetch values from.
-type SortConfig struct {
-	ByDate     bool
-	ByRating   bool
-	Descending bool
-	Number     int
-	Offset     int
-}
-
 // The Backend interface defines all the functions that a conformant
 // QuoteDB will have.  Implementations are of course allowed to
 // provide additional helpers, but these are the only required
 // methods.
 type Backend interface {
-	NewQuote(Quote) error
+	PutQuote(Quote) error
 	DelQuote(Quote) error
-	ModQuote(Quote) error
 	GetQuote(int) (Quote, error)
-
-	// This uses a sort config so it will return the quotes and
-	// the number of pages of quotes available for the current
-	// parameters.
-	GetBulkQuotes(SortConfig) ([]Quote, int)
-
-	// How many quotes are in the database
-	Size() int
-
-	// How many quotes are in moderation
-	ModerationQueueSize() int
 }
 
 // A BackendFactory creates a new QuoteDB Backend initialized and ready for use.
-type BackendFactory func() Backend
+type BackendFactory func(hclog.Logger) (Backend, error)
+
+// A Callback is a function that will be run after package logging is
+// configured.
+type Callback func()
 
 var (
-	backends map[string]BackendFactory
-	impl     = flag.String("db", "", "QDB database backend to use")
+	logger hclog.Logger
+
+	backends  map[string]BackendFactory
+	callbacks []Callback
 )
 
 func init() {
@@ -75,26 +59,39 @@ func Register(name string, f BackendFactory) {
 	}
 	// Register it now
 	backends[name] = f
+	log().Info("Registered backend", "backend", name)
+}
+
+// RegisterCallback adds a callback to allowed deferred startup tasks
+// to run after package logging is configured.
+func RegisterCallback(cb Callback) {
+	callbacks = append(callbacks, cb)
+}
+
+// DoCallbacks runs all the stored callbacks in an unspecified order
+func DoCallbacks() {
+	for _, f := range callbacks {
+		f()
+	}
 }
 
 // New is called to obtain a ready to use QuoteDB instance.
-func New() Backend {
-	if len(backends) == 1 && *impl == "" {
-		for b := range backends {
-			*impl = b
-			break
-		}
-		log.Println("Warning: No QDB backend selected, using first available choice...")
+func New(n string) (Backend, error) {
+	f, ok := backends[n]
+	if !ok {
+		return nil, ErrNoSuchBackend
 	}
-	return backends[*impl]()
+	return f(log())
 }
 
-// ListBackends returns a slice of strings for all currently
-// registered backends that can be instantiated.
-func ListBackends() []string {
-	l := []string{}
-	for b := range backends {
-		l = append(l, b)
+// SetParentLogger sets the package level logger
+func SetParentLogger(l hclog.Logger) {
+	logger = l
+}
+
+func log() hclog.Logger {
+	if logger == nil {
+		return hclog.NewNullLogger()
 	}
-	return l
+	return logger
 }

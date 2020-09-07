@@ -1,8 +1,11 @@
 package web
 
 import (
+	"bytes"
+	"fmt"
 	"html/template"
 	"io"
+	"strings"
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/labstack/echo/v4"
@@ -35,5 +38,15 @@ func (r *renderer) Reload() {
 }
 
 func (r renderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	return r.templates.ExecuteTemplate(w, name, data)
+	var page bytes.Buffer
+	err := r.templates.ExecuteTemplate(&page, name, data)
+	if err != nil {
+		r.log.Error("Template runtime error", "error", err)
+		return err
+	}
+
+	html := strings.Replace(page.String(), "\\n", "<br />", -1)
+	fmt.Fprint(w, html)
+
+	return nil
 }

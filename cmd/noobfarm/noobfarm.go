@@ -5,6 +5,8 @@ import (
 
 	"github.com/hashicorp/go-hclog"
 
+	"github.com/the-maldridge/noobfarm2/internal/qdb"
+	_ "github.com/the-maldridge/noobfarm2/internal/qdb/json"
 	"github.com/the-maldridge/noobfarm2/internal/web"
 )
 
@@ -18,7 +20,15 @@ func main() {
 		Name:  "noobfarm2",
 		Level: hclog.LevelFromString(llevel),
 	})
+	qdb.SetParentLogger(appLogger)
+	qdb.DoCallbacks()
 
-	w := web.New(appLogger, nil)
+	db, err := qdb.New(os.Getenv("NF_QDB"))
+	if err != nil {
+		appLogger.Error("Could not initialize quote source", "error", err)
+		os.Exit(1)
+	}
+
+	w := web.New(appLogger, db)
 	w.Serve(os.Getenv("NF_BIND"))
 }

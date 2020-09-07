@@ -2,6 +2,7 @@ package web
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/hashicorp/go-hclog"
@@ -13,8 +14,9 @@ import (
 // New constructs a new QuoteServer.
 func New(l hclog.Logger, qs QuoteStore) *QuoteServer {
 	x := new(QuoteServer)
-	x.log = l
+	x.log = l.Named("http")
 	x.Echo = echo.New()
+	x.db = qs
 
 	x.rndr = NewRenderer(x.log)
 	x.rndr.Reload()
@@ -86,23 +88,22 @@ func (qs *QuoteServer) home(c echo.Context) error {
 }
 
 func (qs *QuoteServer) showQuote(c echo.Context) error {
-	pagedata := make(map[string]interface{})
-	pagedata["Quotes"] = []qdb.Quote{
-		{
-			ID:           3,
-			Quote:        "lorem ipsum",
-			Rating:       235,
-			Approved:     true,
-			ApprovedBy:   "maldridge",
-			ApprovedDate: time.Now(),
-			Edited:       true,
-			EditedBy:     "maldridge2",
-			EditedDate:   time.Now(),
-			Submitted:    time.Now(),
-			SubmittedIP:  "8.8.8.8",
-		},
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		qs.log.Debug("Error decoding url param", "error", err)
+		return c.NoContent(http.StatusBadRequest)
 	}
 
+	q, err := qs.db.GetQuote(id)
+	if err != nil {
+		qs.log.Debug("Error loading quote", "error", err)
+		if err == qdb.ErrNoSuchQuote {
+			return c.Render(http.StatusNotFound, "404", nil)
+		}
+	}
+
+	pagedata := make(map[string]interface{})
+	pagedata["Quotes"] = []qdb.Quote{q}
 	return c.Render(http.StatusOK, "list", pagedata)
 }
 

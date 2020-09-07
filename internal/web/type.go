@@ -3,6 +3,8 @@ package web
 import (
 	"github.com/hashicorp/go-hclog"
 	"github.com/labstack/echo/v4"
+
+	"github.com/the-maldridge/noobfarm2/internal/qdb"
 )
 
 // A QuoteServer wraps a QuoteSource and serves quotes to the web.  It
@@ -14,9 +16,12 @@ type QuoteServer struct {
 	log hclog.Logger
 
 	rndr *renderer
+
+	db QuoteStore
 }
 
 // A QuoteStore is a persistent place that quotes can be placed and
 // retrieved.
 type QuoteStore interface {
+	GetQuote(int) (qdb.Quote, error)
 }
