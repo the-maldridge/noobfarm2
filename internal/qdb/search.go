@@ -67,14 +67,16 @@ func (s *Searcher) Remove(id int) {
 }
 
 // Search performs a paginated search and returns the results.
-func (s *Searcher) Search(q string, size, from int) []Quote {
+func (s *Searcher) Search(q string, size, from int) ([]Quote, int) {
 	query := bleve.NewQueryStringQuery(q)
 	search := bleve.NewSearchRequestOptions(query, size, from, false)
 	search.SortBy([]string{"ID"})
 	search.Sort.Reverse()
 
 	res, _ := s.idx.Search(search)
-	return s.bulkLoad(res)
+	quotes :=  s.bulkLoad(res)
+	total := int(res.Total)
+	return quotes, total
 }
 
 // bulkLoad handles loading quotes that were found in the search.

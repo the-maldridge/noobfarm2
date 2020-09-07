@@ -31,7 +31,9 @@ type Backend interface {
 	DelQuote(Quote) error
 	GetQuote(int) (Quote, error)
 
-	Search(string, int, int) []Quote
+	// Search returns a set of quotes and how many are in the
+	// total result set of this particular query.
+	Search(string, int, int) ([]Quote, int)
 }
 
 // A BackendFactory creates a new QuoteDB Backend initialized and ready for use.

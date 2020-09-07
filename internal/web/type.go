@@ -24,5 +24,5 @@ type QuoteServer struct {
 // retrieved.
 type QuoteStore interface {
 	GetQuote(int) (qdb.Quote, error)
-	Search(string, int, int) []qdb.Quote
+	Search(string, int, int) ([]qdb.Quote, int)
 }

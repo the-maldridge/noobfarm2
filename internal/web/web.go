@@ -38,10 +38,11 @@ func (qs *QuoteServer) Serve(bind string) error {
 }
 
 func (qs *QuoteServer) home(c echo.Context) error {
-	quotes := qs.db.Search("Approved:T*", 10, 0)
+	quotes, total := qs.db.Search("Approved:T*", 10, 0)
 
 	pagedata := make(map[string]interface{})
 	pagedata["Quotes"] = quotes
+	pagedata["Total"] = total
 
 	return c.Render(http.StatusOK, "home", pagedata)
 }
