@@ -3,6 +3,7 @@ package web
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/labstack/echo/v4"
@@ -24,6 +25,7 @@ func New(l hclog.Logger, qs QuoteStore) *QuoteServer {
 
 	x.GET("/", x.home)
 	x.GET("/quote/:id", x.showQuote)
+	x.GET("/search/:query/:page/:count", x.searchQuotes)
 
 	x.GET("/reload", x.reload)
 
@@ -43,8 +45,11 @@ func (qs *QuoteServer) home(c echo.Context) error {
 	pagedata := make(map[string]interface{})
 	pagedata["Quotes"] = quotes
 	pagedata["Total"] = total
+	pagedata["Home"] = true
+	pagedata["PageSize"] = 10
+	pagedata["Query"] = "Approved:T*"
 
-	return c.Render(http.StatusOK, "home", pagedata)
+	return c.Render(http.StatusOK, "list", pagedata)
 }
 
 func (qs *QuoteServer) showQuote(c echo.Context) error {
@@ -71,4 +76,36 @@ func (qs *QuoteServer) reload(c echo.Context) error {
 	qs.log.Debug("Reloading templates")
 	qs.rndr.Reload()
 	return c.Redirect(302, "/")
+}
+
+func (qs *QuoteServer) searchQuotes(c echo.Context) error {
+	query := c.Param("query")
+
+	// If the query doesn't contain a colon it probably is
+	// expecting to be searched within the Quotes span.
+	if !strings.Contains(query, ":") {
+		qs.log.Debug("Query does not contain a colon, adding one", "query", query)
+		query = "Quote:" + query
+	}
+
+	count, err := strconv.Atoi(c.Param("count"))
+	if err != nil {
+		qs.log.Debug("Bad count parameter", "error", err)
+	}
+	page, err := strconv.Atoi(c.Param("page"))
+	if err != nil {
+		qs.log.Debug("Bad page parameter", "error", err)
+	}
+	page = page - 1
+
+	quotes, total := qs.db.Search(query, count, page*count)
+
+	pagedata := make(map[string]interface{})
+	pagedata["Title"] = "Search Results"
+	pagedata["Quotes"] = quotes
+	pagedata["Total"] = total
+	pagedata["PageSize"] = 10
+	pagedata["Query"] = query
+
+	return c.Render(http.StatusOK, "list", pagedata)
 }

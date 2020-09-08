@@ -73,8 +73,13 @@ func (s *Searcher) Search(q string, size, from int) ([]Quote, int) {
 	search.SortBy([]string{"ID"})
 	search.Sort.Reverse()
 
-	res, _ := s.idx.Search(search)
-	quotes :=  s.bulkLoad(res)
+	s.log.Debug("Performing search", "query", q, "offset", from, "limit", size)
+
+	res, err := s.idx.Search(search)
+	if err != nil {
+		s.log.Warn("Error handling search", "error", err)
+	}
+	quotes := s.bulkLoad(res)
 	total := int(res.Total)
 	return quotes, total
 }
@@ -82,6 +87,7 @@ func (s *Searcher) Search(q string, size, from int) ([]Quote, int) {
 // bulkLoad handles loading quotes that were found in the search.
 func (s *Searcher) bulkLoad(r *bleve.SearchResult) []Quote {
 	out := []Quote{}
+	s.log.Trace("Bulk loading hits", "count", r.Total, "hits", r.Hits)
 	for i := range r.Hits {
 		id, _ := strconv.Atoi(r.Hits[i].ID)
 		q, _ := s.qLoader(id)

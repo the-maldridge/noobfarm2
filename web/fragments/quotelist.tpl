@@ -3,4 +3,6 @@
 {{block "quote" .}}
 {{end}}
 {{end}}
+{{block "pagination" .}}
+{{end}}
 {{end}}
