@@ -3,7 +3,6 @@
   <div class="card-meta">
     <div>
       <a href="/quote/{{.ID}}">#{{.ID}}</a>
-      + ({{.Rating}}) -
     </div>
     <div class="right">Added: {{.Submitted.Format "2006-01-02"}}</div>
   </div>
