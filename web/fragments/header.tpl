@@ -1,5 +1,7 @@
 {{define "header"}}
 <div class="bar top-bar">
-<h3>NoobFarm2</h3>
+  <a href="/">
+    <h3>NoobFarm2</h3>
+  </a>
 </div>
 {{end}}

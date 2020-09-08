@@ -1,7 +1,9 @@
 package web
 
 import (
+	"math"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 
@@ -26,6 +28,7 @@ func New(l hclog.Logger, qs QuoteStore) *QuoteServer {
 	x.GET("/", x.home)
 	x.GET("/quote/:id", x.showQuote)
 	x.GET("/search/:query/:page/:count", x.searchQuotes)
+	x.POST("/dosearch", x.searchReflect)
 
 	x.GET("/reload", x.reload)
 
@@ -45,9 +48,11 @@ func (qs *QuoteServer) home(c echo.Context) error {
 	pagedata := make(map[string]interface{})
 	pagedata["Quotes"] = quotes
 	pagedata["Total"] = total
+	pagedata["Title"] = "NoobFarm"
 	pagedata["Home"] = true
-	pagedata["PageSize"] = 10
 	pagedata["Query"] = "Approved:T*"
+	pagedata["Page"] = 1
+	pagedata["Pagination"] = qs.paginationHelper("Approved:T*", 10, 1, total)
 
 	return c.Render(http.StatusOK, "list", pagedata)
 }
@@ -69,6 +74,8 @@ func (qs *QuoteServer) showQuote(c echo.Context) error {
 
 	pagedata := make(map[string]interface{})
 	pagedata["Quotes"] = []qdb.Quote{q}
+	pagedata["Total"] = 1
+	pagedata["Title"] = "Quote #" + strconv.Itoa(id)
 	return c.Render(http.StatusOK, "list", pagedata)
 }
 
@@ -104,8 +111,64 @@ func (qs *QuoteServer) searchQuotes(c echo.Context) error {
 	pagedata["Title"] = "Search Results"
 	pagedata["Quotes"] = quotes
 	pagedata["Total"] = total
-	pagedata["PageSize"] = 10
-	pagedata["Query"] = query
+	pagedata["Page"] = page + 1
+	pagedata["Pagination"] = qs.paginationHelper(query, count, page+1, total)
 
 	return c.Render(http.StatusOK, "list", pagedata)
+}
+
+func (qs *QuoteServer) searchReflect(c echo.Context) error {
+	return c.Redirect(http.StatusFound, path.Join("search", c.FormValue("query"), "1", "10"))
+}
+
+// paginationHelper builds the information needed to setup the
+// pagination widget later.  This mostly involves doing a lot of
+// fiddly arithmatic to ensure that the padding on each side of the
+// active page is right.
+func (qs *QuoteServer) paginationHelper(q string, count, page, total int) map[string]interface{} {
+	out := make(map[string]interface{})
+
+	type element struct {
+		Text   string
+		Link   string
+		Active bool
+	}
+
+	if page > 1 {
+		out["Prev"] = path.Join("/search", q, strconv.Itoa(page-1), strconv.Itoa(count))
+	}
+
+	if page*count < total {
+		out["Next"] = path.Join("/search", q, strconv.Itoa(page+1), strconv.Itoa(count))
+	}
+
+	maxPage := int(math.Ceil(float64(total) / float64(count)))
+	qs.log.Trace("Pagination should have a max pages", "max", maxPage)
+
+	elements := []element{}
+	start := 0
+	if page-3 >= 0 {
+		start = page - 3
+	}
+	end := maxPage
+	if page+2 < maxPage {
+		end = page + 2
+	}
+	if start+5 > end && start+5 < maxPage {
+		end = start + 5
+	}
+	if end-5 > 0 {
+		start = end - 5
+	}
+	for i := start; i < end; i++ {
+		element := element{}
+		element.Text = strconv.Itoa(i + 1)
+		element.Link = path.Join("/search", q, strconv.Itoa(i+1), strconv.Itoa(count))
+		if i+1 == page {
+			element.Active = true
+		}
+		elements = append(elements, element)
+	}
+	out["Elements"] = elements
+	return out
 }

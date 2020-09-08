@@ -14,6 +14,9 @@
         sites around the internet.
       </div>
       {{end}}
+      {{if gt .Total 1}}
+      {{block "search" .}}{{end}}
+      {{end}}
       {{block "quotelist" . }}{{end}}
     </div>
     {{block "footer" .}}{{end}}
