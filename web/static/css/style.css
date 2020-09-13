@@ -75,6 +75,13 @@ body {
     background: grey;
 }
 
+.quotebox {
+    width: 90%;
+    height: 6em;
+    min-height: 4em;
+    resize: vertical;
+}
+
 #content {
     width: 55%;
     margin-left: auto;

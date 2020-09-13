@@ -35,7 +35,13 @@ func New(l hclog.Logger, qs QuoteStore) *QuoteServer {
 	x.GET("/add", x.addQuoteForm)
 	x.POST("/add", x.addQuote)
 
+	x.GET("/login", x.loginForm)
+	x.POST("/login", x.loginHandler)
+
 	x.GET("/reload", x.reload)
+
+	adm := x.Group("/admin")
+	adm.GET("/", x.adminLanding)
 
 	x.Static("/static", "web/static")
 
@@ -87,7 +93,7 @@ func (qs *QuoteServer) showQuote(c echo.Context) error {
 func (qs *QuoteServer) reload(c echo.Context) error {
 	qs.log.Debug("Reloading templates")
 	qs.rndr.Reload()
-	return c.Redirect(302, "/")
+	return c.Redirect(302, "/login")
 }
 
 func (qs *QuoteServer) searchQuotes(c echo.Context) error {
