@@ -6,6 +6,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/labstack/echo/v4"
@@ -24,11 +25,15 @@ func New(l hclog.Logger, qs QuoteStore) *QuoteServer {
 	x.rndr.Reload()
 
 	x.Echo.Renderer = x.rndr
+	x.Echo.IPExtractor = echo.ExtractIPFromXFFHeader()
 
 	x.GET("/", x.home)
 	x.GET("/quote/:id", x.showQuote)
 	x.GET("/search/:query/:page/:count", x.searchQuotes)
 	x.POST("/dosearch", x.searchReflect)
+
+	x.GET("/add", x.addQuoteForm)
+	x.POST("/add", x.addQuote)
 
 	x.GET("/reload", x.reload)
 
@@ -171,4 +176,33 @@ func (qs *QuoteServer) paginationHelper(q string, count, page, total int) map[st
 	}
 	out["Elements"] = elements
 	return out
+}
+
+func (qs *QuoteServer) addQuoteForm(c echo.Context) error {
+	pagedata := make(map[string]interface{})
+	pagedata["Title"] = "New Quote"
+	return c.Render(http.StatusOK, "addquote", pagedata)
+}
+
+func (qs *QuoteServer) addQuote(c echo.Context) error {
+	quote := c.FormValue("quote")
+	quote = strings.ReplaceAll(quote, "\r\n", "\\n")
+	quote = strings.TrimSpace(quote)
+	if quote == "" {
+		return c.Redirect(http.StatusSeeOther, "/")
+	}
+
+	q := qdb.Quote{
+		ID:          -1,
+		Quote:       quote,
+		Submitted:   time.Now(),
+		SubmittedIP: c.RealIP(),
+	}
+
+	if err := qs.db.PutQuote(q); err != nil {
+		return err
+	}
+	qs.log.Debug("Added new quote", "quote", q)
+
+	return c.Redirect(http.StatusSeeOther, "/")
 }

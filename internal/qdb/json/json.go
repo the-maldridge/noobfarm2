@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sort"
 
 	"github.com/hashicorp/go-hclog"
 
@@ -104,6 +105,10 @@ func (qs *QuoteStore) readQuote(qID int) (qdb.Quote, error) {
 }
 
 func (qs *QuoteStore) writeQuote(q qdb.Quote) error {
+	if q.ID == -1 {
+		q.ID = qs.getNextID()
+	}
+
 	d, err := json.Marshal(q)
 	if err != nil {
 		qs.log.Error("Error marshalling quote", "error", err)
@@ -123,13 +128,13 @@ func (qs *QuoteStore) writeQuote(q qdb.Quote) error {
 }
 
 func (qs *QuoteStore) getNextID() int {
-	highest := 1
-	for {
-		_, err := qs.readQuote(highest + 1)
-		if err == nil {
-			break
-		}
-		highest++
+	highest := -1
+	keys, err := qs.Keys()
+	if err != nil {
+		return highest
 	}
-	return highest + 1
+	(sort.IntSlice)(keys).Sort()
+	highest = keys[len(keys)-1]
+	qs.log.Debug("Next highest id was requested", "id", highest+1)
+	return highest+1
 }
