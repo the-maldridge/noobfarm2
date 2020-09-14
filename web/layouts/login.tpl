@@ -11,8 +11,8 @@
           <form method="POST">
             <fieldset>
               <legend>Log In Securely</legend>
-              <input type="text" placeholder="Username" /><br />
-              <input type="password" placeholder="Password" /><br />
+              <input type="text" name="username" placeholder="Username" /><br />
+              <input type="password" name="password" placeholder="Password" /><br />
               <button action="submit">Log In</button>
             </fieldset>
           </form>

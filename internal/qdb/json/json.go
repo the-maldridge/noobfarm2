@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
-	"sort"
 
 	"github.com/hashicorp/go-hclog"
 
@@ -65,11 +65,16 @@ func (qs *QuoteStore) Keys() ([]int, error) {
 
 // PutQuote creates a new quote and stores it.
 func (qs *QuoteStore) PutQuote(q qdb.Quote) error {
+	if q.ID == -1 {
+		q.ID = qs.getNextID()
+	}
+	qs.Index(q)
 	return qs.writeQuote(q)
 }
 
 // DelQuote removes a quote from the storage backend.
 func (qs *QuoteStore) DelQuote(q qdb.Quote) error {
+	qs.Remove(q.ID)
 	err := os.Remove(filepath.Join(qs.QuoteRoot, fmt.Sprintf("%d.dat", q.ID)))
 	if err != nil {
 		return qdb.ErrInternal
@@ -105,10 +110,6 @@ func (qs *QuoteStore) readQuote(qID int) (qdb.Quote, error) {
 }
 
 func (qs *QuoteStore) writeQuote(q qdb.Quote) error {
-	if q.ID == -1 {
-		q.ID = qs.getNextID()
-	}
-
 	d, err := json.Marshal(q)
 	if err != nil {
 		qs.log.Error("Error marshalling quote", "error", err)
@@ -133,8 +134,11 @@ func (qs *QuoteStore) getNextID() int {
 	if err != nil {
 		return highest
 	}
+	if len(keys) == 0 {
+		return 1
+	}
 	(sort.IntSlice)(keys).Sort()
 	highest = keys[len(keys)-1]
 	qs.log.Debug("Next highest id was requested", "id", highest+1)
-	return highest+1
+	return highest + 1
 }

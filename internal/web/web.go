@@ -3,6 +3,7 @@ package web
 import (
 	"math"
 	"net/http"
+	"os"
 	"path"
 	"strconv"
 	"strings"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/hashicorp/go-hclog"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 
 	"github.com/the-maldridge/noobfarm2/internal/qdb"
 )
@@ -37,10 +39,15 @@ func New(l hclog.Logger, qs QuoteStore) *QuoteServer {
 
 	x.GET("/login", x.loginForm)
 	x.POST("/login", x.loginHandler)
+	x.GET("/logout", x.logoutHandler)
 
 	x.GET("/reload", x.reload)
 
 	adm := x.Group("/admin")
+	adm.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+		SigningKey:  []byte(os.Getenv("NF_TOKEN_STRING")),
+		TokenLookup: "cookie:auth",
+	}))
 	adm.GET("/", x.adminLanding)
 
 	x.Static("/static", "web/static")
