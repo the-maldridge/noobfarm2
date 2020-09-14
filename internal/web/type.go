@@ -25,5 +25,7 @@ type QuoteServer struct {
 type QuoteStore interface {
 	GetQuote(int) (qdb.Quote, error)
 	PutQuote(qdb.Quote) error
+	DelQuote(qdb.Quote) error
+
 	Search(string, int, int) ([]qdb.Quote, int)
 }

@@ -49,6 +49,8 @@ func New(l hclog.Logger, qs QuoteStore) *QuoteServer {
 		TokenLookup: "cookie:auth",
 	}))
 	adm.GET("/", x.adminLanding)
+	adm.POST("/quote/:id/approve", x.approveQuote)
+	adm.POST("/quote/:id/remove", x.removeQuote)
 
 	x.Static("/static", "web/static")
 

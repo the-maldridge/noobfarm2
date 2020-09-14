@@ -3,10 +3,13 @@ package web
 import (
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
+
+	"github.com/the-maldridge/noobfarm2/internal/qdb"
 )
 
 func (qs *QuoteServer) loginForm(c echo.Context) error {
@@ -70,4 +73,43 @@ func (qs *QuoteServer) adminLanding(c echo.Context) error {
 	pagedata["Pagination"] = qs.paginationHelper("Approved:F*", 10, 1, total)
 
 	return c.Render(http.StatusOK, "admin", pagedata)
+}
+
+func (qs *QuoteServer) approveQuote(c echo.Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	name := claims["name"].(string)
+
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return err
+	}
+
+	q, err := qs.db.GetQuote(id)
+	if err != nil {
+		return err
+	}
+
+	q.Approved = true
+	q.ApprovedBy = name
+	q.ApprovedDate = time.Now()
+
+	if err := qs.db.PutQuote(q); err != nil {
+		return err
+	}
+
+	return c.Redirect(http.StatusSeeOther, "/admin/")
+}
+
+func (qs *QuoteServer) removeQuote(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return err
+	}
+
+	if err := qs.db.DelQuote(qdb.Quote{ID: id}); err != nil {
+		return err
+	}
+
+	return c.Redirect(http.StatusSeeOther, "/admin/")
 }

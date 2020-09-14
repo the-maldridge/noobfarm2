@@ -23,8 +23,12 @@
       <td>{{.Submitted.Format "2006-01-02"}}</td>
       <td>{{.SubmittedIP}}</td>
       <td rowspan="2">
-        <div class="button">Approve</div>
-        <div class="button">Remove</div>
+        <form method="POST" action="/admin/quote/{{.ID}}/approve">
+          <button>Approve</button>
+        </form>
+        <form method="POST" action="/admin/quote/{{.ID}}/remove">
+          <button>Remove</button>
+        </form>
       </td>
     </tr>
     <tr>
