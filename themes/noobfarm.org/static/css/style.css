@@ -1,0 +1,105 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+table {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+table, th, td {
+    border: 1px solid black;
+    padding: 0.5em;
+    border-collapse: collapse;
+}
+
+.bar {
+    padding: 0.25em;
+    padding-left: 1em;
+    background: #336699;
+}
+
+.bar a {
+    text-decoration: none;
+    color: white;
+}
+
+.top-bar {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    flex-direction: row;
+}
+
+.bottom-bar {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    color: white;
+}
+
+.card {
+    margin-bottom: 1em;
+}
+
+.card-meta {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: small;
+    margin: 0.5em;
+}
+
+.right {
+    text-align: right;
+}
+
+.center {
+    text-align: center;
+}
+
+.pagination-container a {
+    text-decoration: none;
+    color: black;
+}
+
+.pagination-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.pagination-element {
+    padding: 0.25em;
+    margin: 0.25em;
+    border: 1px solid #336699;
+    border-radius: 3px;
+}
+
+.pagination-active {
+    color: white;
+    background: #336699;
+}
+
+.quotebox {
+    width: 90%;
+    height: 6em;
+    min-height: 4em;
+    resize: vertical;
+}
+
+#content {
+    width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#footer {}
