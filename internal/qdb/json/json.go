@@ -39,6 +39,11 @@ func New(l hclog.Logger) (qdb.Backend, error) {
 		log:       l.Named("json"),
 		QuoteRoot: filepath.Join(os.Getenv("NF_JSONROOT"), "quotes"),
 	}
+
+	if err := os.MkdirAll(qs.QuoteRoot, 0755); err != nil {
+		return nil, err
+	}
+
 	qs.Searcher = qdb.NewSearcher(qs.log)
 	qs.SetQLoader(qs.GetQuote)
 	qs.SetKeysFunc(qs.Keys)
