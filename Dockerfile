@@ -16,3 +16,5 @@ EXPOSE 8080/tcp
 ENV NF_BIND=:8080
 ENV NF_QDB=json
 ENV NF_JSONROOT=/data
+ENV NF_AUTH=file
+ENV NF_USER_FILE=/data/accounts.txt

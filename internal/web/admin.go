@@ -22,7 +22,7 @@ func (qs *QuoteServer) loginHandler(c echo.Context) error {
 	user := c.FormValue("username")
 	pass := c.FormValue("password")
 
-	if user != pass {
+	if err := qs.auth.AuthUser(c.Request().Context(), user, pass); err != nil {
 		return c.Redirect(http.StatusSeeOther, "/login")
 	}
 

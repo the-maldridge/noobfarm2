@@ -1,6 +1,8 @@
 package web
 
 import (
+	"context"
+
 	"github.com/hashicorp/go-hclog"
 	"github.com/labstack/echo/v4"
 
@@ -18,6 +20,8 @@ type QuoteServer struct {
 	rndr *renderer
 
 	db QuoteStore
+
+	auth Auth
 }
 
 // A QuoteStore is a persistent place that quotes can be placed and
@@ -28,4 +32,10 @@ type QuoteStore interface {
 	DelQuote(qdb.Quote) error
 
 	Search(string, int, int) ([]qdb.Quote, int)
+}
+
+// Auth provides a generic interface to test a username and password
+// to see if the user is valid.
+type Auth interface {
+	AuthUser(context.Context, string, string) error
 }

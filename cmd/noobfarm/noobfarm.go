@@ -8,6 +8,8 @@ import (
 	"github.com/the-maldridge/noobfarm2/internal/qdb"
 	_ "github.com/the-maldridge/noobfarm2/internal/qdb/json"
 	"github.com/the-maldridge/noobfarm2/internal/web"
+	"github.com/the-maldridge/noobfarm2/internal/web/auth"
+	_ "github.com/the-maldridge/noobfarm2/internal/web/auth/file"
 )
 
 func main() {
@@ -21,7 +23,9 @@ func main() {
 		Level: hclog.LevelFromString(llevel),
 	})
 	qdb.SetParentLogger(appLogger)
+	auth.SetParentLogger(appLogger)
 	qdb.DoCallbacks()
+	auth.DoCallbacks()
 
 	db, err := qdb.New(os.Getenv("NF_QDB"))
 	if err != nil {
@@ -29,6 +33,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	w := web.New(appLogger, db)
+	auth, err := auth.Initialize(os.Getenv("NF_AUTH"))
+	if err != nil {
+		appLogger.Error("Could not initialize authenticator", "error", err)
+		os.Exit(1)
+	}
+
+	w := web.New(appLogger, db, auth)
 	w.Serve(os.Getenv("NF_BIND"))
 }

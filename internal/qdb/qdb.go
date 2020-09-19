@@ -90,7 +90,7 @@ func New(n string) (Backend, error) {
 
 // SetParentLogger sets the package level logger
 func SetParentLogger(l hclog.Logger) {
-	logger = l
+	logger = l.Named("qdb")
 }
 
 func log() hclog.Logger {

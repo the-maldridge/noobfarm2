@@ -17,11 +17,12 @@ import (
 )
 
 // New constructs a new QuoteServer.
-func New(l hclog.Logger, qs QuoteStore) *QuoteServer {
+func New(l hclog.Logger, qs QuoteStore, a Auth) *QuoteServer {
 	x := new(QuoteServer)
 	x.log = l.Named("http")
 	x.Echo = echo.New()
 	x.db = qs
+	x.auth = a
 
 	x.rndr = NewRenderer(x.log)
 	x.rndr.Reload()
