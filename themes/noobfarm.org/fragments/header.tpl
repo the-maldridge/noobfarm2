@@ -1,7 +1,7 @@
 {{define "header"}}
 <div class="bar top-bar">
   <img src="/static/img/logo.png" />
-  <a href="/" style="flex: 1 1 auto;" class="center">
+  <a href="/" id="title" class="center">
     <h2><em>Noobfarm</em></h2>
   </a>
 </div>

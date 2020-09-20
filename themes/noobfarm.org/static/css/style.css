@@ -96,6 +96,13 @@ table, th, td {
     resize: vertical;
 }
 
+#title {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
 #content {
     width: 800px;
     margin-left: auto;
