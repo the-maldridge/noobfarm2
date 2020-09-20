@@ -1,0 +1,48 @@
+version: "3.3"
+
+services:
+
+  traefik:
+    image: "traefik:v2.2"
+    container_name: "traefik"
+    restart: "always"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=http"
+      - "--certificatesresolvers.letsencrypt.acme.email=noobfarm@noobfarm.org"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "letsencrypt:/letsencrypt"
+
+  noobfarm:
+    container_name: "noobfarm2"
+    restart: "always"
+    build:
+      context: ../
+      args:
+        theme: noobfarm.org
+    environment:
+      NF_TOKEN_STRING: "${NF_TOKEN_STRING}"
+    volumes:
+      - nf-data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.noobfarm.rule=Host(`noobfarm.org`)||Host(`www.noobfarm.org`)"
+      - "traefik.http.routers.noobfarm.entrypoints=https"
+      - "traefik.http.routers.noobfarm.tls.certresolver=letsencrypt"
+
+volumes:
+  letsencrypt:
+  nf-data:
+    name: nf-data
+    external: true
