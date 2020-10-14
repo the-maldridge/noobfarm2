@@ -97,6 +97,11 @@ func (qs *QuoteServer) showQuote(c echo.Context) error {
 	pagedata["Quotes"] = []qdb.Quote{q}
 	pagedata["Total"] = 1
 	pagedata["Title"] = "Quote #" + strconv.Itoa(id)
+
+	if c.Request().Header.Get("Accept") == "application/json" {
+		pagedata["Quotes"] = cleanQuotes(pagedata["Quotes"])
+		return c.JSON(http.StatusOK, pagedata)
+	}
 	return c.Render(http.StatusOK, "list", pagedata)
 }
 
@@ -135,6 +140,10 @@ func (qs *QuoteServer) searchQuotes(c echo.Context) error {
 	pagedata["Page"] = page + 1
 	pagedata["Pagination"] = qs.paginationHelper(query, count, page+1, total)
 
+	if c.Request().Header.Get("Accept") == "application/json" {
+		pagedata["Quotes"] = cleanQuotes(pagedata["Quotes"])
+		return c.JSON(http.StatusOK, pagedata)
+	}
 	return c.Render(http.StatusOK, "list", pagedata)
 }
 
@@ -221,4 +230,15 @@ func (qs *QuoteServer) addQuote(c echo.Context) error {
 	qs.log.Debug("Added new quote", "quote", q)
 
 	return c.Redirect(http.StatusSeeOther, "/")
+}
+
+func cleanQuotes(in interface{}) []qdb.Quote {
+	list := in.([]qdb.Quote)
+
+	out := make([]qdb.Quote, len(list))
+	for i := range list {
+		out[i] = list[i]
+		out[i].SubmittedIP = ""
+	}
+	return out
 }
