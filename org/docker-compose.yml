@@ -3,7 +3,7 @@ version: "3.3"
 services:
 
   traefik:
-    image: "traefik:v2.2"
+    image: "traefik:v2.5.6"
     container_name: "traefik"
     restart: "always"
     command:
@@ -16,6 +16,7 @@ services:
       - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=http"
       - "--certificatesresolvers.letsencrypt.acme.email=noobfarm@noobfarm.org"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--pilot.dashboard=false"
     ports:
       - "80:80"
       - "443:443"
@@ -37,7 +38,7 @@ services:
       - nf-data:/data
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.noobfarm.rule=Host(`noobfarm.org`)||Host(`www.noobfarm.org`)"
+      - "traefik.http.routers.noobfarm.rule=Host(`noobfarm.org`, `www.noobfarm.org`)"
       - "traefik.http.routers.noobfarm.entrypoints=https"
       - "traefik.http.routers.noobfarm.tls.certresolver=letsencrypt"
 
