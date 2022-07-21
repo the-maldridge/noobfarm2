@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Noobfarm2{% endblock %}</title>
+    <link rel="icon" href="/static/img/favicon.ico">
+    <link href="/static/css/style.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="bar top-bar">
+      <img src="/static/img/logo.png" />
+      <a href="/" id="title" class="center">
+        <h2><em>Noobfarm</em></h2>
+      </a>
+    </div>
+    <div class="center">
+      <a href="/">Home</a>
+      <a href="/add">Add Quote</a>
+    </div>
+    <div id="content">
+      <hr />
+      {% block content %}
+      {% endblock %}
+    </div>
+    <div id="footer" class="bar bottom-bar center">
+      &copy Noobfarm | noobfarm.org | noobfarm@noobfarm.org <br />
+      <small>Noobfarm.org logo courtesy of k-net. Used with permission from the author.</small>
+    </div>
+  </body>
+</html>

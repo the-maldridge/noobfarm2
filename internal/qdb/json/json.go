@@ -82,6 +82,7 @@ func (qs *QuoteStore) DelQuote(q qdb.Quote) error {
 	qs.Remove(q.ID)
 	err := os.Remove(filepath.Join(qs.QuoteRoot, fmt.Sprintf("%d.dat", q.ID)))
 	if err != nil {
+		qs.log.Error("Error removing file", "error", err)
 		return qdb.ErrInternal
 	}
 	return nil
@@ -110,6 +111,8 @@ func (qs *QuoteStore) readQuote(qID int) (qdb.Quote, error) {
 		qs.log.Error("Error unmarshaling file", "error", err)
 		return qdb.Quote{}, qdb.ErrInternal
 	}
+
+	q.Quote = strings.ReplaceAll(q.Quote, "\\n", "\n")
 
 	return q, nil
 }

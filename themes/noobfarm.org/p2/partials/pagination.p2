@@ -1,0 +1,25 @@
+<div class="card">
+  <div class="center">
+    There are {{Total}} quotes.
+  </div>
+
+  {% if Total > Quotes|length %}
+  <div class="pagination-container center">
+    {% if Pagination.Prev %}
+    <div class="pagination-element">
+      <a href="{{Pagination.Prev}}">Previous</a>
+    </div>
+    {% endif %}
+    {% for element in Pagination.Elements %}
+    <a href="{{element.Link}}">
+      <div class="pagination-element {% if element.Active %}pagination-active{% endif %}">{{element.Text}}</div>
+    </a>
+    {% endfor %}
+    {% if Pagination.Next %}
+    <div class="pagination-element">
+      <a href="{{Pagination.Next}}">Next</a>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>

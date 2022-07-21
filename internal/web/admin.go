@@ -2,66 +2,16 @@ package web
 
 import (
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
-	"github.com/labstack/echo/v4"
+	"github.com/flosch/pongo2/v4"
+	"github.com/go-chi/chi/v5"
 
 	"github.com/the-maldridge/noobfarm2/internal/qdb"
 )
 
-func (qs *QuoteServer) loginForm(c echo.Context) error {
-	pagedata := make(map[string]interface{})
-	pagedata["Title"] = "Login"
-	return c.Render(http.StatusOK, "login", pagedata)
-}
-
-func (qs *QuoteServer) loginHandler(c echo.Context) error {
-	user := c.FormValue("username")
-	pass := c.FormValue("password")
-
-	if err := qs.auth.AuthUser(c.Request().Context(), user, pass); err != nil {
-		return c.Redirect(http.StatusSeeOther, "/login")
-	}
-
-	// Create token
-	token := jwt.New(jwt.SigningMethodHS256)
-
-	// Set claims
-	claims := token.Claims.(jwt.MapClaims)
-	claims["name"] = user
-	claims["admin"] = true
-	claims["exp"] = time.Now().Add(time.Hour).Unix()
-
-	// Generate encoded token and send it as response.
-	t, err := token.SignedString([]byte(os.Getenv("NF_TOKEN_STRING")))
-	if err != nil {
-		qs.log.Warn("Could not generate sign-on token", "error", err)
-		return err
-	}
-
-	cookie := new(http.Cookie)
-	cookie.Name = "auth"
-	cookie.Value = t
-	cookie.Expires = time.Now().Add(time.Hour)
-	c.SetCookie(cookie)
-
-	return c.Render(http.StatusOK, "redirect-to-admin", nil)
-}
-
-func (qs *QuoteServer) logoutHandler(c echo.Context) error {
-	cookie := new(http.Cookie)
-	cookie.Name = "auth"
-	cookie.Value = ""
-	cookie.Expires = time.Now()
-	c.SetCookie(cookie)
-
-	return c.String(http.StatusOK, "You are now logged out.")
-}
-
-func (qs *QuoteServer) adminLanding(c echo.Context) error {
+func (qs *QuoteServer) adminLanding(w http.ResponseWriter, r *http.Request) {
 	quotes, total := qs.db.Search("Approved:F*", 10, 0)
 
 	pagedata := make(map[string]interface{})
@@ -72,44 +22,46 @@ func (qs *QuoteServer) adminLanding(c echo.Context) error {
 	pagedata["Page"] = 1
 	pagedata["Pagination"] = qs.paginationHelper("Approved:F*", 10, 1, total)
 
-	return c.Render(http.StatusOK, "admin", pagedata)
+	qs.doTemplate(w, r, "views/admin-index.p2", pagedata)
 }
 
-func (qs *QuoteServer) approveQuote(c echo.Context) error {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(jwt.MapClaims)
-	name := claims["name"].(string)
-
-	id, err := strconv.Atoi(c.Param("id"))
+func (qs *QuoteServer) approveQuote(w http.ResponseWriter, r *http.Request) {
+	name := r.Context().Value(ctxUser{})
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		return err
+		qs.doTemplate(w, r, "views/internal-error.p2", pongo2.Context{"error": err.Error()})
+		return
 	}
 
 	q, err := qs.db.GetQuote(id)
 	if err != nil {
-		return err
+		qs.doTemplate(w, r, "views/internal-error.p2", pongo2.Context{"error": err.Error()})
+		return
 	}
 
 	q.Approved = true
-	q.ApprovedBy = name
+	q.ApprovedBy = name.(string)
 	q.ApprovedDate = time.Now()
 
 	if err := qs.db.PutQuote(q); err != nil {
-		return err
+		qs.doTemplate(w, r, "views/internal-error.p2", pongo2.Context{"error": err.Error()})
+		return
 	}
 
-	return c.Redirect(http.StatusSeeOther, "/admin/")
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }
 
-func (qs *QuoteServer) removeQuote(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+func (qs *QuoteServer) removeQuote(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		return err
+		qs.doTemplate(w, r, "views/internal-error.p2", pongo2.Context{"error": err.Error()})
+		return
 	}
 
 	if err := qs.db.DelQuote(qdb.Quote{ID: id}); err != nil {
-		return err
+		qs.doTemplate(w, r, "views/internal-error.p2", pongo2.Context{"error": err.Error()})
+		return
 	}
 
-	return c.Redirect(http.StatusSeeOther, "/admin/")
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }

@@ -1,0 +1,10 @@
+{% extends "base.p2" %}
+{% block title %}Internal Error{% endblock %}
+
+{% block content %}
+<div class="card">
+<div class="center">
+<p>An Internal Error has occured: {{error}}</p>
+</div>
+</div>
+{% endblock %}

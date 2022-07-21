@@ -40,5 +40,7 @@ func main() {
 	}
 
 	w := web.New(appLogger, db, auth)
-	w.Serve(os.Getenv("NF_BIND"))
+	if err := w.Serve(os.Getenv("NF_BIND")); err != nil {
+		appLogger.Error("Fatal error starting webserver", "error", err)
+	}
 }

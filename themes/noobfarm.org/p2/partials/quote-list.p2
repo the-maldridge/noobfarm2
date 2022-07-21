@@ -1,0 +1,8 @@
+<hr />
+{% for quote in Quotes %}
+{% include "partials/quote.p2" %}
+<hr />
+{% endfor %}
+{% if Total > 1 %}
+{% include "partials/pagination.p2" %}
+{% endif %}

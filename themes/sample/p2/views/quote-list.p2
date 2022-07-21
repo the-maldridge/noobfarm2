@@ -1,0 +1,7 @@
+{% extends "base.p2" %}
+
+{% block title %}Noobfarm2 Home{% endblock %}
+
+{% block content %}
+{% include "partials/quote-list.p2" %}
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.p2" %}
+
+{% block title %}Noobfarm{% endblock %}
+
+{% block content %}
+<div class="card">
+  NoobFarm.org is a moderated quote database that allows anyone to
+  submit quotes for others to enjoy.  It is inspired by
+  bash.org, the original RQMS, and many other humor inspiring
+  sites around the internet.
+</div>
+{% if Total > 1 %}
+<hr />
+<div class="card">
+  <div class="center">
+    <form action="/dosearch" method="POST">
+      <fieldset>
+        <legend>Search The Database</legend>
+        <input type="text" name="query", size="65" />
+        <button>Search</button>
+      </fieldset>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% include "partials/quote-list.p2" %}
+{% endblock %}

@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Noobfarm2{% endblock %}</title>
+    <link href="/static/css/style.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="bar top-bar">
+      <a href="/">
+        <h3>NoobFarm2</h3>
+      </a>
+      <a href="/add">
+        <h4>Add Quote</h4>
+      </a>
+    </div>
+    <div id="content">
+      {% block content %}
+      {% endblock %}
+    </div>
+    <div id="footer" class="bar bottom-bar">
+Powered by <a href="https://github.com/the-maldridge/noobfarm2">NoobFarm2</a>
+    </div>
+  </body>
+</html>

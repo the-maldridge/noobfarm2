@@ -1,52 +1,48 @@
 package web
 
 import (
-	"bytes"
 	"fmt"
-	"html/template"
-	"io"
+	"net/http"
 	"strings"
 
-	"github.com/hashicorp/go-hclog"
-	"github.com/labstack/echo/v4"
+	"github.com/flosch/pongo2/v4"
+	"github.com/go-chi/chi/v5"
 )
 
-type renderer struct {
-	log hclog.Logger
-
-	templates *template.Template
+func (qs *QuoteServer) templateErrorHandler(w http.ResponseWriter, err error) {
+	fmt.Fprintf(w, "Error while rendering template: %s\n", err)
 }
 
-// NewRenderer constructs a new echo compatible renderer.
-func NewRenderer(l hclog.Logger) *renderer {
-	x := new(renderer)
-	x.log = l.Named("template")
-	return x
-}
-
-// Reload loads all templates again.
-func (r *renderer) Reload() {
-	newTmpl := template.New("base")
-	if _, err := newTmpl.ParseGlob("web/fragments/*.tpl"); err != nil {
-		r.log.Error("Error parsing fragments", "error", err)
+func (qs *QuoteServer) fileServer(r chi.Router, path string, root http.FileSystem) {
+	if strings.ContainsAny(path, "{}*") {
+		panic("FileServer does not permit any URL parameters.")
 	}
 
-	if _, err := newTmpl.ParseGlob("web/layouts/*.tpl"); err != nil {
-		r.log.Error("Error parsing layouts", "error", err)
+	if path != "/" && path[len(path)-1] != '/' {
+		r.Get(path, http.RedirectHandler(path+"/", http.StatusMovedPermanently).ServeHTTP)
+		path += "/"
 	}
-	r.templates = newTmpl
+	path += "*"
+
+	r.Get(path, func(w http.ResponseWriter, r *http.Request) {
+		rctx := chi.RouteContext(r.Context())
+		pathPrefix := strings.TrimSuffix(rctx.RoutePattern(), "/*")
+		fs := http.StripPrefix(pathPrefix, http.FileServer(root))
+		fs.ServeHTTP(w, r)
+	})
 }
 
-func (r renderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
-	var page bytes.Buffer
-	err := r.templates.ExecuteTemplate(&page, name, data)
+func (qs *QuoteServer) doTemplate(w http.ResponseWriter, r *http.Request, tmpl string, ctx pongo2.Context) {
+	if ctx == nil {
+		ctx = pongo2.Context{}
+	}
+
+	t, err := qs.tmpls.FromCache(tmpl)
 	if err != nil {
-		r.log.Error("Template runtime error", "error", err)
-		return err
+		qs.templateErrorHandler(w, err)
+		return
 	}
-
-	html := strings.Replace(page.String(), "\\n", "<br />", -1)
-	fmt.Fprint(w, html)
-
-	return nil
+	if err := t.ExecuteWriter(ctx, w); err != nil {
+		qs.templateErrorHandler(w, err)
+	}
 }

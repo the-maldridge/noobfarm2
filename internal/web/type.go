@@ -2,9 +2,12 @@ package web
 
 import (
 	"context"
+	"net/http"
 
+	"github.com/flosch/pongo2/v4"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/hashicorp/go-hclog"
-	"github.com/labstack/echo/v4"
 
 	"github.com/the-maldridge/noobfarm2/internal/qdb"
 )
@@ -13,11 +16,13 @@ import (
 // also provides a writeable gateway to accept changes to the
 // QuoteStore.
 type QuoteServer struct {
-	*echo.Echo
-
 	log hclog.Logger
 
-	rndr *renderer
+	r chi.Router
+	n *http.Server
+
+	tmpls *pongo2.TemplateSet
+	jwt   *jwtauth.JWTAuth
 
 	db QuoteStore
 
@@ -39,3 +44,6 @@ type QuoteStore interface {
 type Auth interface {
 	AuthUser(context.Context, string, string) error
 }
+
+// Type for keying the context for the user name.
+type ctxUser struct{}

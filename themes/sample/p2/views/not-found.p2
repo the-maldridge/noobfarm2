@@ -1,0 +1,11 @@
+{% extends "base.p2" %}
+
+{% block title %}Not Found{% endblock %}
+
+{% block content %}
+<div class="card">
+<div class="center">
+<p>The requested resource could not be found.</p>
+</div>
+</div>
+{% endblock %}

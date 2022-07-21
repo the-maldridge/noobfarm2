@@ -1,6 +1,7 @@
 package web
 
 import (
+	"encoding/json"
 	"math"
 	"net/http"
 	"os"
@@ -9,9 +10,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/flosch/pongo2/v4"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/hashicorp/go-hclog"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 
 	"github.com/the-maldridge/noobfarm2/internal/qdb"
 )
@@ -20,50 +23,60 @@ import (
 func New(l hclog.Logger, qs QuoteStore, a Auth) *QuoteServer {
 	x := new(QuoteServer)
 	x.log = l.Named("http")
-	x.Echo = echo.New()
 	x.db = qs
 	x.auth = a
+	x.jwt = jwtauth.New("HS256", []byte(os.Getenv("NF_TOKEN_STRING")), nil)
 
-	x.rndr = NewRenderer(x.log)
-	x.rndr.Reload()
+	sbl, err := pongo2.NewSandboxedFilesystemLoader("theme/p2")
+	if err != nil {
+		x.log.Error("Error loading templates", "error", err)
+		return nil
+	}
+	x.tmpls = pongo2.NewSet("html", sbl)
+	x.tmpls.Debug = true
 
-	x.Echo.Renderer = x.rndr
-	x.Echo.IPExtractor = echo.ExtractIPFromXFFHeader()
+	x.n = new(http.Server)
+	x.r = chi.NewRouter()
 
-	x.GET("/", x.home)
-	x.GET("/quote/:id", x.showQuote)
-	x.GET("/search/:query/:page/:count", x.searchQuotes)
-	x.POST("/dosearch", x.searchReflect)
+	x.r.Use(middleware.CleanPath)
+	x.r.Use(middleware.Compress(5, "text/html", "text/css"))
+	x.r.Use(middleware.RealIP)
+	x.r.Use(middleware.Recoverer)
 
-	x.GET("/add", x.addQuoteForm)
-	x.POST("/add", x.addQuote)
+	x.r.Get("/", x.home)
+	x.r.Get("/quote/{id}", x.showQuote)
+	x.r.Get("/search/{query}/{page}/{count}", x.searchQuotes)
+	x.r.Post("/dosearch", x.searchReflect)
 
-	x.GET("/login", x.loginForm)
-	x.POST("/login", x.loginHandler)
-	x.GET("/logout", x.logoutHandler)
+	x.r.Get("/add", x.addQuoteForm)
+	x.r.Post("/add", x.addQuote)
 
-	x.GET("/reload", x.reload)
+	x.r.Get("/login", x.loginForm)
+	x.r.Post("/login", x.loginHandler)
+	x.r.Get("/logout", x.logoutHandler)
 
-	adm := x.Group("/admin")
-	adm.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-		SigningKey:  []byte(os.Getenv("NF_TOKEN_STRING")),
-		TokenLookup: "cookie:auth",
-	}))
-	adm.GET("/", x.adminLanding)
-	adm.POST("/quote/:id/approve", x.approveQuote)
-	adm.POST("/quote/:id/remove", x.removeQuote)
+	x.r.Route("/admin", func(r chi.Router) {
+		r.Use(jwtauth.Verifier(x.jwt))
+		r.Use(x.adminAreaAuth)
+		r.Get("/", x.adminLanding)
+		r.Post("/quote/{id}/approve", x.approveQuote)
+		r.Post("/quote/{id}/remove", x.removeQuote)
+	})
 
-	x.Static("/static", "web/static")
+	x.fileServer(x.r, "/static", http.Dir("theme/static"))
 
 	return x
 }
 
 // Serve binds to the specified address and serves HTTP.
 func (qs *QuoteServer) Serve(bind string) error {
-	return qs.Start(bind)
+	qs.log.Info("HTTP is starting")
+	qs.n.Addr = bind
+	qs.n.Handler = qs.r
+	return qs.n.ListenAndServe()
 }
 
-func (qs *QuoteServer) home(c echo.Context) error {
+func (qs *QuoteServer) home(w http.ResponseWriter, r *http.Request) {
 	quotes, total := qs.db.Search("Approved:T*", 10, 0)
 
 	pagedata := make(map[string]interface{})
@@ -75,21 +88,23 @@ func (qs *QuoteServer) home(c echo.Context) error {
 	pagedata["Page"] = 1
 	pagedata["Pagination"] = qs.paginationHelper("Approved:T*", 10, 1, total)
 
-	return c.Render(http.StatusOK, "list", pagedata)
+	qs.doTemplate(w, r, "views/index.p2", pagedata)
 }
 
-func (qs *QuoteServer) showQuote(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id"))
+func (qs *QuoteServer) showQuote(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		qs.log.Debug("Error decoding url param", "error", err)
-		return c.NoContent(http.StatusBadRequest)
+		qs.doTemplate(w, r, "views/internal-error.p2", pongo2.Context{"error": err.Error()})
+		return
 	}
 
 	q, err := qs.db.GetQuote(id)
 	if err != nil {
 		qs.log.Debug("Error loading quote", "error", err)
 		if err == qdb.ErrNoSuchQuote {
-			return c.Render(http.StatusNotFound, "404", nil)
+			qs.doTemplate(w, r, "views/not-found.p2", nil)
+			return
 		}
 	}
 
@@ -98,21 +113,17 @@ func (qs *QuoteServer) showQuote(c echo.Context) error {
 	pagedata["Total"] = 1
 	pagedata["Title"] = "Quote #" + strconv.Itoa(id)
 
-	if c.Request().Header.Get("Accept") == "application/json" {
-		pagedata["Quotes"] = cleanQuotes(pagedata["Quotes"])
-		return c.JSON(http.StatusOK, pagedata)
+	if r.Header.Get("Accept") == "application/json" {
+		enc := json.NewEncoder(w)
+		w.WriteHeader(http.StatusOK)
+		enc.Encode(pagedata)
+		return
 	}
-	return c.Render(http.StatusOK, "list", pagedata)
+	qs.doTemplate(w, r, "views/quote-list.p2", pagedata)
 }
 
-func (qs *QuoteServer) reload(c echo.Context) error {
-	qs.log.Debug("Reloading templates")
-	qs.rndr.Reload()
-	return c.Redirect(302, "/login")
-}
-
-func (qs *QuoteServer) searchQuotes(c echo.Context) error {
-	query := c.Param("query")
+func (qs *QuoteServer) searchQuotes(w http.ResponseWriter, r *http.Request) {
+	query := chi.URLParam(r, "query")
 
 	// If the query doesn't contain a colon it probably is
 	// expecting to be searched within the Quotes span.
@@ -121,11 +132,11 @@ func (qs *QuoteServer) searchQuotes(c echo.Context) error {
 		query = "Quote:" + query
 	}
 
-	count, err := strconv.Atoi(c.Param("count"))
+	count, err := strconv.Atoi(chi.URLParam(r, "count"))
 	if err != nil {
 		qs.log.Debug("Bad count parameter", "error", err)
 	}
-	page, err := strconv.Atoi(c.Param("page"))
+	page, err := strconv.Atoi(chi.URLParam(r, "page"))
 	if err != nil {
 		qs.log.Debug("Bad page parameter", "error", err)
 	}
@@ -140,15 +151,18 @@ func (qs *QuoteServer) searchQuotes(c echo.Context) error {
 	pagedata["Page"] = page + 1
 	pagedata["Pagination"] = qs.paginationHelper(query, count, page+1, total)
 
-	if c.Request().Header.Get("Accept") == "application/json" {
-		pagedata["Quotes"] = cleanQuotes(pagedata["Quotes"])
-		return c.JSON(http.StatusOK, pagedata)
+	if r.Header.Get("Accept") == "application/json" {
+		enc := json.NewEncoder(w)
+		w.WriteHeader(http.StatusOK)
+		enc.Encode(pagedata)
+		return
 	}
-	return c.Render(http.StatusOK, "list", pagedata)
+	qs.doTemplate(w, r, "views/quote-list.p2", pagedata)
 }
 
-func (qs *QuoteServer) searchReflect(c echo.Context) error {
-	return c.Redirect(http.StatusFound, path.Join("search", c.FormValue("query"), "1", "10"))
+func (qs *QuoteServer) searchReflect(w http.ResponseWriter, r *http.Request) {
+	query := r.PostFormValue("query")
+	http.Redirect(w, r, path.Join("search", query, "1", "10"), http.StatusFound)
 }
 
 // paginationHelper builds the information needed to setup the
@@ -203,42 +217,32 @@ func (qs *QuoteServer) paginationHelper(q string, count, page, total int) map[st
 	return out
 }
 
-func (qs *QuoteServer) addQuoteForm(c echo.Context) error {
+func (qs *QuoteServer) addQuoteForm(w http.ResponseWriter, r *http.Request) {
 	pagedata := make(map[string]interface{})
 	pagedata["Title"] = "New Quote"
-	return c.Render(http.StatusOK, "addquote", pagedata)
+	qs.doTemplate(w, r, "views/quote-add.p2", pagedata)
 }
 
-func (qs *QuoteServer) addQuote(c echo.Context) error {
-	quote := c.FormValue("quote")
+func (qs *QuoteServer) addQuote(w http.ResponseWriter, r *http.Request) {
+	quote := r.PostFormValue("quote")
 	quote = strings.ReplaceAll(quote, "\r\n", "\\n")
 	quote = strings.TrimSpace(quote)
 	if quote == "" {
-		return c.Redirect(http.StatusSeeOther, "/")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
 	}
 
 	q := qdb.Quote{
 		ID:          -1,
 		Quote:       quote,
 		Submitted:   time.Now(),
-		SubmittedIP: c.RealIP(),
+		SubmittedIP: r.RemoteAddr,
 	}
 
 	if err := qs.db.PutQuote(q); err != nil {
-		return err
+		qs.doTemplate(w, r, "views/internal-error.p2", pongo2.Context{"error": err.Error()})
+		return
 	}
 	qs.log.Debug("Added new quote", "quote", q)
-
-	return c.Redirect(http.StatusSeeOther, "/")
-}
-
-func cleanQuotes(in interface{}) []qdb.Quote {
-	list := in.([]qdb.Quote)
-
-	out := make([]qdb.Quote, len(list))
-	for i := range list {
-		out[i] = list[i]
-		out[i].SubmittedIP = ""
-	}
-	return out
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

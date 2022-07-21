@@ -2,3 +2,4 @@ data/
 quotes.csv
 internal/web/assets/bindata.go
 vendor/
+accounts.txt

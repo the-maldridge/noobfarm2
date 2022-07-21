@@ -1,0 +1,9 @@
+<div class="card">
+  <div class="card-meta">
+    <div>
+      <a href="/quote/{{quote.ID}}">#{{quote.ID}}</a>
+    </div>
+    <div class="right">Added: {{quote.Submitted}}</div>
+  </div>
+  {{quote.Quote|escape|linebreaks|safe}}
+</div>
