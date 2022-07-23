@@ -33,7 +33,6 @@ func New(l hclog.Logger, qs QuoteStore, a Auth) *QuoteServer {
 		return nil
 	}
 	x.tmpls = pongo2.NewSet("html", sbl)
-	x.tmpls.Debug = true
 
 	x.n = new(http.Server)
 	x.r = chi.NewRouter()
