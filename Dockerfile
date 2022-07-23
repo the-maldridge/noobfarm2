@@ -9,7 +9,7 @@ RUN cd /go/noobfarm2 && \
 FROM scratch
 ARG theme=sample
 COPY --from=build /noobfarm2 /
-COPY --from=build /go/noobfarm2/themes/$theme/ /web
+COPY --from=build /go/noobfarm2/themes/$theme/ /theme
 CMD ["/noobfarm2"]
 VOLUME /data
 EXPOSE 8080/tcp
