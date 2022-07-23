@@ -17,10 +17,10 @@
     {% for quote in Quotes %}
     <tr>
       <td rowspan="2">{{ID}}</td>
-      <td>{{quote.Approved}}</td>
+      <td>{{quote.Approved|date:"2006-01-02"}}</td>
       <td>{{quote.ApprovedBy}}</td>
       <td>{{quote.ApprovedOn}}</td>
-      <td>{{quote.Submitted}}</td>
+      <td>{{quote.Submitted|date:"2006-01-02"}}</td>
       <td>{{quote.SubmittedIP}}</td>
       <td rowspan="2">
         <form method="POST" action="/admin/quote/{{quote.ID}}/approve">

@@ -3,7 +3,7 @@
     <div>
       <a href="/quote/{{quote.ID}}">#{{quote.ID}}</a>
     </div>
-    <div class="right">Added: {{quote.Submitted}}</div>
+    <div class="right">Added: {{quote.Submitted|date:"2006-01-02"}}</div>
   </div>
   {{quote.Quote|escape|linebreaks|safe}}
 </div>
