@@ -35,10 +35,9 @@ services:
       context: ../
       args:
         theme: noobfarm.org
-    environment:
-      NF_TOKEN_STRING: "${NF_TOKEN_STRING}"
     volumes:
       - nf-data:/data
+      - nf-auth:/auth
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.noobfarm.rule=Host(`noobfarm.org`)||Host(`www.noobfarm.org`)"
@@ -49,4 +48,7 @@ volumes:
   letsencrypt:
   nf-data:
     name: nf-data
+    external: true
+  nf-auth:
+    name: nf-auth
     external: true

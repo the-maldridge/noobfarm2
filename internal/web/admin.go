@@ -7,6 +7,7 @@ import (
 
 	"github.com/flosch/pongo2/v4"
 	"github.com/go-chi/chi/v5"
+	"github.com/the-maldridge/authware"
 
 	"github.com/the-maldridge/noobfarm2/internal/qdb"
 )
@@ -26,7 +27,7 @@ func (qs *QuoteServer) adminLanding(w http.ResponseWriter, r *http.Request) {
 }
 
 func (qs *QuoteServer) approveQuote(w http.ResponseWriter, r *http.Request) {
-	name := r.Context().Value(ctxUser{})
+	user := r.Context().Value(authware.UserKey{}).(authware.User)
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		qs.doTemplate(w, r, "views/internal-error.p2", pongo2.Context{"error": err.Error()})
@@ -40,7 +41,7 @@ func (qs *QuoteServer) approveQuote(w http.ResponseWriter, r *http.Request) {
 	}
 
 	q.Approved = true
-	q.ApprovedBy = name.(string)
+	q.ApprovedBy = user.Identity
 	q.ApprovedDate = time.Now()
 
 	if err := qs.db.PutQuote(q); err != nil {

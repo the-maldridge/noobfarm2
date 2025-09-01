@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"math"
 	"net/http"
-	"os"
 	"path"
 	"strconv"
 	"strings"
@@ -13,24 +12,22 @@ import (
 	"github.com/flosch/pongo2/v4"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/jwtauth/v5"
 	"github.com/hashicorp/go-hclog"
+	"github.com/the-maldridge/authware"
 
 	"github.com/the-maldridge/noobfarm2/internal/qdb"
 )
 
 // New constructs a new QuoteServer.
-func New(l hclog.Logger, qs QuoteStore, a Auth) *QuoteServer {
+func New(l hclog.Logger, qs QuoteStore) (*QuoteServer, error) {
 	x := new(QuoteServer)
 	x.log = l.Named("http")
 	x.db = qs
-	x.auth = a
-	x.jwt = jwtauth.New("HS256", []byte(os.Getenv("NF_TOKEN_STRING")), nil)
 
 	sbl, err := pongo2.NewSandboxedFilesystemLoader("theme/p2")
 	if err != nil {
 		x.log.Error("Error loading templates", "error", err)
-		return nil
+		return nil, err
 	}
 	x.tmpls = pongo2.NewSet("html", sbl)
 
@@ -50,13 +47,18 @@ func New(l hclog.Logger, qs QuoteStore, a Auth) *QuoteServer {
 	x.r.Get("/add", x.addQuoteForm)
 	x.r.Post("/add", x.addQuote)
 
+	basic, err := authware.NewAuth()
+	if err != nil {
+		x.log.Error("Error initializing auth", "error", err)
+		return nil, err
+	}
+
 	x.r.Get("/login", x.loginForm)
-	x.r.Post("/login", x.loginHandler)
-	x.r.Get("/logout", x.logoutHandler)
+	x.r.Post("/login", basic.LoginFormHandler("username", "password", "/admin"))
+	x.r.Get("/logout", basic.LogoutHandler("/"))
 
 	x.r.Route("/admin", func(r chi.Router) {
-		r.Use(jwtauth.Verifier(x.jwt))
-		r.Use(x.adminAreaAuth)
+		r.Use(basic.LoginHandler("/login"))
 		r.Get("/", x.adminLanding)
 		r.Post("/quote/{id}/approve", x.approveQuote)
 		r.Post("/quote/{id}/remove", x.removeQuote)
@@ -64,7 +66,7 @@ func New(l hclog.Logger, qs QuoteStore, a Auth) *QuoteServer {
 
 	x.fileServer(x.r, "/static", http.Dir("theme/static"))
 
-	return x
+	return x, nil
 }
 
 // Serve binds to the specified address and serves HTTP.
@@ -73,6 +75,12 @@ func (qs *QuoteServer) Serve(bind string) error {
 	qs.n.Addr = bind
 	qs.n.Handler = qs.r
 	return qs.n.ListenAndServe()
+}
+
+func (qs *QuoteServer) loginForm(w http.ResponseWriter, r *http.Request) {
+       pagedata := make(map[string]interface{})
+       pagedata["Title"] = "Login"
+       qs.doTemplate(w, r, "views/login.p2", pagedata)
 }
 
 func (qs *QuoteServer) home(w http.ResponseWriter, r *http.Request) {

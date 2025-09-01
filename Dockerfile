@@ -1,4 +1,4 @@
-FROM golang:alpine as build
+FROM golang:1.24-alpine AS build
 
 RUN mkdir -p /go/noobfarm2
 COPY ./ /go/noobfarm2
@@ -16,5 +16,5 @@ EXPOSE 8080/tcp
 ENV NF_BIND=:8080
 ENV NF_QDB=json
 ENV NF_JSONROOT=/data
-ENV NF_AUTH=file
-ENV NF_USER_FILE=/data/accounts.txt
+ENV AUTHWARE_HTPASSWD_FILE=/auth/.htpasswd
+ENV AUTHWARE_HTGROUP_FILE=/auth/.htgroup
